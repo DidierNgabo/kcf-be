@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { SponsorService } from './sponsor.service';
 import { CreateSponsorDto } from './dto/create-sponsor.dto';
+import { MatchSponsorDto } from './dto/match-sponsor.dto';
 
 @Controller('sponsor')
 export class SponsorController {
@@ -10,5 +11,11 @@ export class SponsorController {
   @HttpCode(200)
   submit(@Body() dto: CreateSponsorDto) {
     return this.sponsorService.submit(dto).then(() => ({ success: true }));
+  }
+
+  @Post('match')
+  @HttpCode(200)
+  match(@Body() dto: MatchSponsorDto) {
+    return this.sponsorService.match(dto).then(() => ({ success: true }));
   }
 }
