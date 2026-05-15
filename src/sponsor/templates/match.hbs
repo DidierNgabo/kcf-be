@@ -3,64 +3,255 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>You've Been Matched – Kwizera Charity Foundation</title>
+  <title>Your Little Bestie is Here! – Kwizera Charity Foundation</title>
   <style>
-    body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif; }
-    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .header { background-color: #1a6b3c; padding: 32px 40px; text-align: center; }
-    .header h1 { margin: 0; color: #ffffff; font-size: 22px; letter-spacing: 0.5px; }
-    .header p { margin: 8px 0 0; color: #a8d5b5; font-size: 14px; }
-    .body { padding: 36px 40px; color: #333333; line-height: 1.7; font-size: 15px; }
+    body { margin: 0; padding: 0; background-color: #f0f0f0; font-family: Arial, Helvetica, sans-serif; }
+    img { border: 0; display: block; }
+    a { color: inherit; text-decoration: none; }
+
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+
+    /* Header */
+    .header { background-color: #e8b84b; padding: 36px 40px; text-align: center; }
+    .header-icon { font-size: 32px; color: #2d3748; line-height: 1; margin-bottom: 12px; }
+    .header h1 { margin: 0 0 8px; color: #2d3748; font-size: 26px; font-weight: bold; }
+    .header p { margin: 0; color: #4a5568; font-size: 14px; }
+
+    /* Body */
+    .body { padding: 36px 44px 40px; color: #4a5568; font-size: 15px; line-height: 1.8; }
     .body p { margin: 0 0 16px; }
-    .child-card { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin: 24px 0; }
-    .child-card img { width: 100%; max-height: 240px; object-fit: cover; display: block; }
-    .child-info { padding: 20px 24px; }
-    .child-info h2 { margin: 0 0 4px; font-size: 20px; color: #1a6b3c; }
-    .child-info .age { display: inline-block; background: #f0f9f4; color: #1a6b3c; border: 1px solid #a8d5b5; border-radius: 20px; padding: 2px 12px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
-    .child-info p { margin: 0; color: #555555; font-size: 14px; line-height: 1.6; }
-    .steps { background: #f0f9f4; border-left: 4px solid #1a6b3c; padding: 18px 22px; border-radius: 4px; margin: 24px 0; }
-    .steps h3 { margin: 0 0 12px; color: #1a6b3c; font-size: 15px; }
-    .steps ol { margin: 0; padding-left: 20px; }
-    .steps ol li { margin-bottom: 8px; font-size: 14px; color: #444444; }
-    .footer { background-color: #f9f9f9; border-top: 1px solid #ececec; padding: 20px 40px; text-align: center; font-size: 12px; color: #888888; }
+    .intro-title { font-size: 22px; font-weight: bold; color: #2d3748; text-align: center; margin: 0 0 12px; }
+    .intro-text { text-align: center; color: #718096; font-size: 15px; margin: 0 0 28px; }
+
+    /* Child profile card */
+    .profile-card { background: #fffef5; border-radius: 12px; overflow: hidden; margin-bottom: 32px; }
+    .profile-photo { width: 100%; max-height: 320px; object-fit: cover; display: block; border-radius: 10px; }
+    .profile-info { padding: 20px 24px; text-align: center; }
+    .profile-name { font-size: 26px; font-weight: bold; color: #2d3748; margin: 0 0 8px; }
+    .profile-meta { color: #718096; font-size: 14px; margin: 0 0 18px; }
+    .profile-meta .spark { color: #e8b84b; }
+    .stat-cell { width: 50%; padding: 4px; vertical-align: top; }
+    .stat-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; text-align: center; border: 1px solid #f0e8d0; }
+    .stat-label { font-size: 12px; color: #a0aec0; margin: 0 0 4px; }
+    .stat-value { font-size: 15px; font-weight: bold; color: #2d3748; margin: 0; }
+
+    /* Welcome message box */
+    .message-box { border: 2px dashed #e8b84b; border-radius: 10px; padding: 20px 24px; margin: 18px 0 0; background: #fffef5; text-align: center; }
+    .message-icon { font-size: 28px; margin-bottom: 10px; }
+    .message-quote { font-style: italic; font-size: 15px; color: #4a5568; line-height: 1.7; margin: 0; }
+    .message-quote strong { color: #2d3748; font-style: normal; }
+
+    /* Impact section */
+    .section-title { font-size: 20px; font-weight: bold; color: #2d3748; text-align: center; margin: 0 0 10px; }
+    .section-sub { text-align: center; color: #718096; font-size: 14px; line-height: 1.6; margin: 0 0 20px; }
+    .impact-cell { width: 50%; padding: 6px; vertical-align: top; }
+    .impact-box { background: #fdf6ec; border-radius: 10px; padding: 20px 16px; text-align: center; }
+    .impact-icon { width: 52px; height: 52px; background: #e8b84b; border-radius: 50%; margin: 0 auto 12px; font-size: 22px; line-height: 52px; text-align: center; color: #2d3748; }
+    .impact-title { font-size: 14px; font-weight: bold; color: #2d3748; margin: 0 0 6px; }
+    .impact-desc { font-size: 13px; color: #718096; margin: 0; line-height: 1.5; }
+
+    /* Getting to know */
+    .know-section { border-left: 4px solid #e8b84b; padding: 4px 0 4px 20px; margin: 28px 0; }
+    .know-title { font-size: 17px; font-weight: bold; color: #2d3748; margin: 0 0 14px; }
+    .know-section p { margin: 0 0 12px; font-size: 14px; color: #4a5568; line-height: 1.7; }
+    .know-section p:last-child { margin-bottom: 0; }
+
+    /* CTA */
+    .cta { text-align: center; margin: 28px 0 8px; }
+    .cta a { background: #e8b84b; color: #2d3748; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: bold; font-size: 15px; display: inline-block; }
+    .cta-sub { text-align: center; color: #a0aec0; font-size: 13px; margin: 8px 0 28px; }
+
+    /* What happens next */
+    .next-card { background: #fffef0; border-radius: 10px; padding: 24px 28px; margin-bottom: 28px; }
+    .next-title { font-size: 18px; font-weight: bold; color: #2d3748; text-align: center; margin: 0 0 18px; }
+    .next-num { width: 30px; height: 30px; background: #e8b84b; border-radius: 50%; text-align: center; font-weight: bold; font-size: 14px; color: #2d3748; line-height: 30px; vertical-align: top; }
+    .next-cell { padding-left: 14px; vertical-align: top; font-size: 14px; color: #4a5568; line-height: 1.6; padding-bottom: 12px; }
+
+    /* Closing */
+    .closing { text-align: center; padding: 8px 0 24px; }
+    .star-icon { font-size: 40px; margin-bottom: 12px; }
+    .closing h2 { font-size: 20px; font-weight: bold; color: #2d3748; margin: 0 0 12px; }
+    .closing p { color: #718096; font-size: 14px; line-height: 1.7; margin: 0 0 20px; }
+    .closing-btn a { background: #e8b84b; color: #2d3748; text-decoration: none; padding: 15px 32px; border-radius: 50px; font-weight: bold; font-size: 14px; display: inline-block; }
+
+    /* Signoff */
+    .divider { border: none; border-top: 1px solid #e2e8f0; margin: 28px 0; }
+    .signoff { text-align: center; color: #4a5568; font-size: 15px; }
+    .signoff p { margin: 0 0 4px; }
+    .signoff .bestie { font-style: italic; color: #718096; font-size: 14px; }
+
+    /* Footer */
+    .footer { background: #fdf6ec; padding: 32px 40px; text-align: center; }
+    .footer-title { font-weight: bold; color: #2d3748; font-size: 15px; margin: 0 0 16px; }
+    .social-icons { margin: 0 0 20px; }
+    .social-icon { display: inline-block; width: 42px; height: 42px; border: 1px solid #e2d3b8; border-radius: 50%; margin: 0 4px; line-height: 42px; text-align: center; color: #4a5568; text-decoration: none; font-size: 17px; background: #ffffff; }
+    .footer-info { color: #718096; font-size: 13px; line-height: 1.9; margin: 0; }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="header">
-      <h1>Kwizera Charity Foundation</h1>
-      <p>A match has been made</p>
-    </div>
-    <div class="body">
-      <p>Dear <strong>{{sponsorName}}</strong>,</p>
-      <p>We are thrilled to share some wonderful news — you have been officially matched with a child through the Kwizera Charity Foundation sponsorship programme. This is a meaningful milestone, and we are grateful for your commitment to changing a young life.</p>
 
-      <div class="child-card">
-        <img src="{{childImageUrl}}" alt="Photo of {{childName}}" />
-        <div class="child-info">
-          <h2>{{childName}}</h2>
-          <span class="age">Age {{childAge}}</span>
-          <p>{{childBio}}</p>
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">&#9829;</div>
+      <h1>Your Little Bestie is Here!</h1>
+      <p>The moment you've been waiting for has arrived</p>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <p class="intro-title">Meet Your New Little Bestie</p>
+      <p class="intro-text">Dear <strong>{{sponsorName}}</strong>, we are thrilled to introduce you to someone very special.</p>
+
+      <!-- Child profile card -->
+      <div class="profile-card">
+        <img src="cid:match-child" alt="{{childName}}" class="profile-photo" width="600" />
+        <div class="profile-info">
+          <p class="profile-name">{{childName}}</p>
+          <p class="profile-meta"><span class="spark">&#10022;</span> Age {{childAge}} &nbsp;&bull;&nbsp; Kigali, Rwanda</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td class="stat-cell">
+                <div class="stat-box">
+                  <p class="stat-label">Favourite Subject</p>
+                  <p class="stat-value">{{childSubject}}</p>
+                </div>
+              </td>
+              <td class="stat-cell">
+                <div class="stat-box">
+                  <p class="stat-label">Dream</p>
+                  <p class="stat-value">{{childDream}}</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <div class="message-box">
+            <p class="message-quote">"Hi, I'm <strong>{{childName}}</strong>. Thank you for sponsoring me. It means the world to me, <strong>{{sponsorName}}</strong>!"</p>
+          </div>
         </div>
       </div>
 
-      <p>Your generosity will help <strong>{{childName}}</strong> access quality education, healthcare, and the support they need to build a brighter future.</p>
+      <!-- Impact -->
+      <p class="section-title">Your Impact on {{childName}}'s Life</p>
+      <p class="section-sub">By sponsoring {{childName}}, you're not just providing support—you're becoming a trusted friend and mentor who will help shape their future. Here's how your sponsorship will make a difference:</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="impact-cell">
+            <div class="impact-box">
+              <div style="width:52px;height:52px;background:#e8b84b;border-radius:50%;margin:0 auto 12px;font-size:16px;font-weight:bold;line-height:52px;text-align:center;color:#2d3748;font-family:Arial,sans-serif;">E</div>
+              <p class="impact-title">Education</p>
+              <p class="impact-desc">School fees, uniforms, books, and learning materials</p>
+            </div>
+          </td>
+          <td class="impact-cell">
+            <div class="impact-box">
+              <div style="width:52px;height:52px;background:#e8b84b;border-radius:50%;margin:0 auto 12px;font-size:16px;font-weight:bold;line-height:52px;text-align:center;color:#2d3748;font-family:Arial,sans-serif;">N</div>
+              <p class="impact-title">Nutrition</p>
+              <p class="impact-desc">Healthy meals and essential nutrition support</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="impact-cell">
+            <div class="impact-box">
+              <div style="width:52px;height:52px;background:#e8b84b;border-radius:50%;margin:0 auto 12px;font-size:16px;font-weight:bold;line-height:52px;text-align:center;color:#2d3748;font-family:Arial,sans-serif;">M</div>
+              <p class="impact-title">Mentorship</p>
+              <p class="impact-desc">Guidance, emotional support, and life skills development</p>
+            </div>
+          </td>
+          <td class="impact-cell">
+            <div class="impact-box">
+              <div style="width:52px;height:52px;background:#e8b84b;border-radius:50%;margin:0 auto 12px;font-size:16px;font-weight:bold;line-height:52px;text-align:center;color:#2d3748;font-family:Arial,sans-serif;">H</div>
+              <p class="impact-title">Healthcare</p>
+              <p class="impact-desc">Medical care, check-ups, and health monitoring</p>
+            </div>
+          </td>
+        </tr>
+      </table>
 
-      <div class="steps">
-        <h3>What happens next</h3>
-        <ol>
-          <li>Our team will reach out within <strong>3–5 business days</strong> to introduce you and share more details about {{childName}}'s progress and needs.</li>
-          <li>You will receive a <strong>first check-in report</strong> within the first month, including updates on school attendance and wellbeing.</li>
-          <li>Going forward you will get <strong>monthly updates</strong> on {{childName}}'s milestones, achievements, and how your support is making a difference.</li>
-        </ol>
+      <!-- Getting to know -->
+      <div class="know-section">
+        <p class="know-title">Getting to Know {{childName}}</p>
+        <p><strong>{{childName}}</strong> is a bright and curious {{childAge}}-year-old who dreams of becoming a {{childDream}}. Their favourite subject in school is {{childSubject}}, and they light up whenever they get to learn something new.</p>
+        <p>In their free time, {{childName}} loves {{childHobby}}, and their teachers describe them as {{childPersonality}}. They live with {{childFamily}} in {{childLocation}}, Kigali.</p>
+        <p>What makes {{childName}} truly special is {{childUniqueQuality}}. Your support will help them pursue their education and build the future they dream of.</p>
       </div>
 
-      <p>Thank you for choosing to make a difference. You are not just sponsoring a child — you are investing in a future full of possibility.</p>
-      <p>With gratitude,<br /><strong>Kwizera Charity Foundation Team</strong></p>
+      <!-- CTA -->
+      <div class="cta">
+        <a href="https://kwizeracharityfoundation.org">View {{childName}}'s Welcome Page</a>
+      </div>
+      <p class="cta-sub">Access photos, letters, and progress updates</p>
+
+      <!-- What happens next -->
+      <div class="next-card">
+        <p class="next-title">What Happens Next?</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td width="30" style="width:30px;padding:0;" valign="top">
+              <div style="width:30px;height:30px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:14px;color:#2d3748;line-height:30px;font-family:Arial,sans-serif;">1</div>
+            </td>
+            <td class="next-cell">You'll receive monthly progress updates on {{childName}}'s education and well-being</td>
+          </tr>
+          <tr><td colspan="2" height="4"></td></tr>
+          <tr>
+            <td width="30" style="width:30px;padding:0;" valign="top">
+              <div style="width:30px;height:30px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:14px;color:#2d3748;line-height:30px;font-family:Arial,sans-serif;">2</div>
+            </td>
+            <td class="next-cell">You can send and receive letters, photos, and video messages to build your relationship</td>
+          </tr>
+          <tr><td colspan="2" height="4"></td></tr>
+          <tr>
+            <td width="30" style="width:30px;padding:0;" valign="top">
+              <div style="width:30px;height:30px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:14px;color:#2d3748;line-height:30px;font-family:Arial,sans-serif;">3</div>
+            </td>
+            <td class="next-cell">You'll get quarterly impact reports showing how your sponsorship is transforming their life</td>
+          </tr>
+          <tr><td colspan="2" height="4"></td></tr>
+          <tr>
+            <td width="30" style="width:30px;padding:0;" valign="top">
+              <div style="width:30px;height:30px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:14px;color:#2d3748;line-height:30px;font-family:Arial,sans-serif;">4</div>
+            </td>
+            <td class="next-cell" style="padding-bottom:0;">You can visit {{childName}} in Rwanda if you'd like to meet them in person (optional)</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Closing -->
+      <div class="closing">
+        <h2>This is Just the Beginning</h2>
+        <p>You've just changed a child's life forever. {{childName}} now has hope, opportunity, and a friend who believes in their dreams. Thank you for making this beautiful connection possible.</p>
+        <div class="closing-btn">
+          <a href="https://kwizeracharityfoundation.org">Welcome to the Kwizera family, {{sponsorName}}!</a>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Signoff -->
+      <div class="signoff">
+        <p>With deep gratitude and joy,</p>
+        <p><strong>The Kwizera Team</strong></p>
+        <p class="bestie">and your new little bestie, {{childName}}</p>
+      </div>
     </div>
+
+    <!-- Footer -->
     <div class="footer">
-      &copy; {{year}} Kwizera Charity Foundation &bull; hello@vnbcoffee.com
+      <p class="footer-title">Stay Connected</p>
+      <div class="social-icons">
+        <a href="https://kwizeracharityfoundation.org" class="social-icon" style="font-size:13px;font-weight:bold;font-family:Arial,sans-serif;">W</a>
+        <a href="https://instagram.com/kwizeracharityfoundation" class="social-icon" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">IG</a>
+        <a href="https://facebook.com/kwizeracharityfoundation" class="social-icon" style="font-size:17px;font-family:Arial,sans-serif;">f</a>
+        <a href="mailto:info@kwizeracharityfoundation.org" class="social-icon" style="font-size:15px;font-family:Arial,sans-serif;">@</a>
+      </div>
+      <p class="footer-info">
+        Kwizera Charity Foundation<br />
+        Kigali, Rwanda<br />
+        info@kwizeracharityfoundation.org
+      </p>
     </div>
+
   </div>
 </body>
 </html>
