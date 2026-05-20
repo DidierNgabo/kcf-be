@@ -15,6 +15,7 @@ import { Sponsor } from './sponsor/entities/sponsor.entity';
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
+      url: process.env.DATABASE_URL,
       host: process.env.DATABASE_HOST || 'localhost',
       port: parseInt(process.env.DATABASE_PORT || '5432', 10),
       username: process.env.DATABASE_USERNAME,
@@ -23,6 +24,16 @@ import { Sponsor } from './sponsor/entities/sponsor.entity';
       entities: [Sponsor, Child],
       synchronize: true,
       ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+      retryAttempts: 10,
+      retryDelay: 3000,
+      extra: {
+        // TCP keepalive so the OS detects dead connections before TypeORM reuses them
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000,
+        // Drop idle pool connections after 10 minutes so stale ones don't accumulate
+        idleTimeoutMillis: 600000,
+        connectionTimeoutMillis: 10000,
+      },
     }),
     SponsorModule,
     ChildrenModule,

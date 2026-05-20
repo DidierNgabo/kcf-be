@@ -29,12 +29,18 @@ export class FollowUpService {
   async processQueue(): Promise<void> {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const due = await this.sponsorRepo.find({
-      where: {
-        followUpSentAt: IsNull(),
-        createdAt: LessThanOrEqual(cutoff),
-      },
-    });
+    let due: Sponsor[];
+    try {
+      due = await this.sponsorRepo.find({
+        where: {
+          followUpSentAt: IsNull(),
+          createdAt: LessThanOrEqual(cutoff),
+        },
+      });
+    } catch (err) {
+      this.logger.error('Failed to query sponsors for follow-up (DB connection issue?)', err);
+      return;
+    }
 
     if (due.length === 0) return;
 
