@@ -30,6 +30,30 @@ export class Sponsor {
   @Column({ type: 'timestamptz', nullable: true })
   followUpSentAt: Date;
 
+  @Column({ default: false })
+  unsubscribed: boolean;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  unsubscribedAt: Date | null;
+
+  @Column({ type: 'uuid', unique: true, default: () => 'gen_random_uuid()' })
+  unsubscribeToken: string;
+
+  @Column({ type: 'text', nullable: true })
+  childInterests: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  schoolGoals: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  hobbiesAndTalents: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  communicationPreferences: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  preferencesCompletedAt: Date | null;
+
   @ManyToOne(() => Child, { nullable: true, eager: true, onDelete: 'SET NULL' })
   child: Child;
 }

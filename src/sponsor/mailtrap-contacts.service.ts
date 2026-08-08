@@ -57,8 +57,6 @@ export class MailtrapContactsService implements OnModuleInit {
       { method: 'GET' },
     );
 
-    console.log('Existing contact fields:', res);
-
     const existing = new Set(res?.map((f) => f.merge_tag));
 
     for (const field of REQUIRED_FIELDS) {
@@ -96,8 +94,7 @@ export class MailtrapContactsService implements OnModuleInit {
     path: string,
     init: RequestInit,
   ): Promise<T> {
-    console.log('Mailtrap API Request:', init.method, path);
-    console.log('api token', this.token);
+    this.logger.debug(`Mailtrap Contacts API request: ${init.method} ${path}`);
     const response = await fetch(`${BASE_URL}${path}`, {
       ...init,
       headers: {

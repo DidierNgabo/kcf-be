@@ -1,99 +1,50 @@
+import { Type } from 'class-transformer';
 import {
-  IsBoolean,
-  IsDateString,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Min,
+  IsBoolean, IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional,
+  IsString, Matches, ValidateNested,
 } from 'class-validator';
+import { ConsentStatus } from '../enums/child.enums';
+
+export class EducationInputDto {
+  @IsString() @IsOptional() schoolName?: string;
+  @IsString() @IsOptional() schoolLevel?: string;
+  @IsString() @IsOptional() yearGroup?: string;
+  @IsDateString() @IsOptional() startedAt?: string;
+}
+
+export class GuardianInputDto {
+  @IsString() @IsOptional() name?: string;
+  @IsString() @IsNotEmpty() relationship: string;
+  @IsString() @IsOptional() phone?: string;
+  @IsEmail() @IsOptional() email?: string;
+  @IsBoolean() @IsOptional() isPrimary?: boolean;
+}
+
+export class ConsentInputDto {
+  @IsEnum(ConsentStatus) guardian: ConsentStatus;
+  @IsEnum(ConsentStatus) photo: ConsentStatus;
+  @IsString() @IsOptional() notes?: string;
+}
 
 export class CreateChildDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+  @IsString() @Matches(/^[A-Za-z0-9-]{3,40}$/) kcfNumber: string;
+  @IsString() @IsNotEmpty() name: string;
+  @IsString() @IsOptional() gender?: string;
+  @IsDateString() @IsOptional() dateOfBirth?: string;
+  @IsDateString() @IsOptional() enrolmentDate?: string;
+  @IsString() @IsOptional() bio?: string;
+  @IsString() @IsOptional() subject?: string;
+  @IsString() @IsOptional() dream?: string;
+  @IsString() @IsOptional() hobby?: string;
+  @IsString() @IsOptional() personality?: string;
+  @IsString() @IsOptional() family?: string;
+  @IsString() @IsOptional() location?: string;
+  @IsString() @IsOptional() uniqueQuality?: string;
 
-  @IsInt()
-  @Min(1)
-  age: number;
-
-  @IsString()
-  @IsNotEmpty()
-  imageUrl: string;
-
-  @IsString()
-  @IsNotEmpty()
-  bio: string;
-
-  @IsString()
-  @IsNotEmpty()
-  subject: string;
-
-  @IsString()
-  @IsNotEmpty()
-  dream: string;
-
-  @IsString()
-  @IsNotEmpty()
-  hobby: string;
-
-  @IsString()
-  @IsNotEmpty()
-  personality: string;
-
-  @IsString()
-  @IsNotEmpty()
-  family: string;
-
-  @IsString()
-  @IsNotEmpty()
-  location: string;
-
-  @IsString()
-  @IsNotEmpty()
-  uniqueQuality: string;
-
-  @IsString()
-  @IsOptional()
-  gender?: string;
-
-  @IsDateString()
-  @IsOptional()
-  dateOfBirth?: string;
-
-  @IsString()
-  @IsOptional()
-  schoolName?: string;
-
-  @IsString()
-  @IsOptional()
-  schoolLevel?: string;
-
-  @IsString()
-  @IsOptional()
-  schoolYearGroup?: string;
-
-  @IsDateString()
-  @IsOptional()
-  enrolmentDate?: string;
-
-  @IsString()
-  @IsOptional()
-  guardianName?: string;
-
-  @IsString()
-  @IsOptional()
-  guardianRelationship?: string;
-
-  @IsBoolean()
-  @IsOptional()
-  guardianConsent?: boolean;
-
-  @IsBoolean()
-  @IsOptional()
-  photoConsentStatus?: boolean;
-
-  @IsDateString()
-  @IsOptional()
-  sponsorshipStartDate?: string;
+  @ValidateNested() @Type(() => EducationInputDto) @IsOptional()
+  education?: EducationInputDto;
+  @ValidateNested({ each: true }) @Type(() => GuardianInputDto) @IsOptional()
+  guardians?: GuardianInputDto[];
+  @ValidateNested() @Type(() => ConsentInputDto) @IsOptional()
+  consent?: ConsentInputDto;
 }

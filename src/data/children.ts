@@ -114,7 +114,8 @@ export const children: Child[] = [
     personality: 'responsible and compassionate',
     family: 'his mother and three younger siblings',
     location: 'Gisozi',
-    uniqueQuality: 'his selfless dedication to family and community from such a young age',
+    uniqueQuality:
+      'his selfless dedication to family and community from such a young age',
     schoolName: 'GS Gisozi II',
     schoolLevel: 'Primary',
     schoolYearGroup: 'P6',
@@ -139,7 +140,8 @@ export const children: Child[] = [
     personality: 'energetic and talented',
     family: 'her grandmother and cousin',
     location: 'Remera',
-    uniqueQuality: 'her extraordinary talent for dance that lights up every room she enters',
+    uniqueQuality:
+      'her extraordinary talent for dance that lights up every room she enters',
     schoolName: 'EPAK DON Bosco',
     schoolLevel: 'Primary',
     schoolYearGroup: 'P4',

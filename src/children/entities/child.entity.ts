@@ -1,85 +1,62 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  Column, CreateDateColumn, Entity, Index, OneToMany,
+  PrimaryGeneratedColumn, UpdateDateColumn,
 } from 'typeorm';
+import { ChildStatus } from '../enums/child.enums';
+import { ChildConsent } from './child-consent.entity';
+import { ChildEducation } from './child-education.entity';
+import { ChildGuardian } from './child-guardian.entity';
+import { ChildMedia } from './child-media.entity';
 
-@Entity()
+@Entity('child')
 export class Child {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('uuid') id: string;
 
-  @Column()
-  name: string;
-
-  @Column()
-  age: number;
-
+  @Index({ unique: true })
   @Column({ type: 'varchar', nullable: true })
-  gender: string | null;
+  kcfNumber: string | null;
 
-  @Column({ type: 'date', nullable: true })
-  dateOfBirth: Date | null;
+  @Column() name: string;
+  @Column({ type: 'varchar', nullable: true }) gender: string | null;
+  @Column({ type: 'date', nullable: true }) dateOfBirth: Date | null;
+  @Column({ type: 'date', nullable: true }) enrolmentDate: Date | null;
+  @Column({ type: 'varchar', default: ChildStatus.ACTIVE }) status: ChildStatus;
+  @Column({ type: 'timestamptz', nullable: true }) archivedAt: Date | null;
+  @Column({ type: 'uuid', nullable: true }) profileMediaId: string | null;
 
-  @Column()
-  imageUrl: string;
+  // Public-profile fields retained while kcf-web migrates to the richer profile.
+  @Column({ type: 'varchar', nullable: true }) imageUrl: string | null;
+  @Column({ type: 'text', nullable: true }) bio: string | null;
+  @Column({ type: 'varchar', nullable: true }) subject: string | null;
+  @Column({ type: 'varchar', nullable: true }) dream: string | null;
+  @Column({ type: 'varchar', nullable: true }) hobby: string | null;
+  @Column({ type: 'varchar', nullable: true }) personality: string | null;
+  @Column({ type: 'varchar', nullable: true }) family: string | null;
+  @Column({ type: 'varchar', nullable: true }) location: string | null;
+  @Column({ type: 'text', nullable: true }) uniqueQuality: string | null;
 
-  @Column('text')
-  bio: string;
+  @OneToMany(() => ChildEducation, (record) => record.child, { cascade: true })
+  educationRecords: ChildEducation[];
+  @OneToMany(() => ChildGuardian, (guardian) => guardian.child, { cascade: true })
+  guardians: ChildGuardian[];
+  @OneToMany(() => ChildConsent, (consent) => consent.child, { cascade: true })
+  consents: ChildConsent[];
+  @OneToMany(() => ChildMedia, (media) => media.child)
+  media: ChildMedia[];
 
-  @Column()
-  subject: string;
+  @CreateDateColumn() createdAt: Date;
+  @UpdateDateColumn() updatedAt: Date;
 
-  @Column()
-  dream: string;
-
-  @Column()
-  hobby: string;
-
-  @Column()
-  personality: string;
-
-  @Column()
-  family: string;
-
-  @Column()
-  location: string;
-
-  @Column('text')
-  uniqueQuality: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  schoolName: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  schoolLevel: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  schoolYearGroup: string | null;
-
-  @Column({ type: 'date', nullable: true })
-  enrolmentDate: Date | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  guardianName: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  guardianRelationship: string | null;
-
-  @Column({ type: 'boolean', default: false })
-  guardianConsent: boolean;
-
-  @Column({ type: 'boolean', default: false })
-  photoConsentStatus: boolean;
-
-  @Column({ type: 'date', nullable: true })
-  sponsorshipStartDate: Date | null;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  get age(): number | null {
+    if (!this.dateOfBirth) return null;
+    const today = new Date();
+    const birth = new Date(this.dateOfBirth);
+    let value = today.getUTCFullYear() - birth.getUTCFullYear();
+    if (
+      today.getUTCMonth() < birth.getUTCMonth() ||
+      (today.getUTCMonth() === birth.getUTCMonth() &&
+        today.getUTCDate() < birth.getUTCDate())
+    ) value -= 1;
+    return value;
+  }
 }

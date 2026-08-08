@@ -1,33 +1,58 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, LessThanOrEqual, Repository } from 'typeorm';
-import { Cron } from '@nestjs/schedule';
-import { MailtrapClient } from 'mailtrap';
-import * as handlebars from 'handlebars';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Sponsor } from './entities/sponsor.entity';
+import { FollowUpSettings } from './entities/follow-up-settings.entity';
+import { UpdateFollowUpSettingsDto } from './dto/update-follow-up-settings.dto';
+import { MailService } from '../mail/mail.service';
+import { UsersService } from '../users/users.service';
 
-const SENDER = {
-  name: 'Kwizera Charity Foundation',
-  email: 'hello@vnbcoffee.com',
-};
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class FollowUpService {
   private readonly logger = new Logger(FollowUpService.name);
-  private readonly client = new MailtrapClient({
-    token: process.env.MAILTRAP_TOKEN!,
-  });
 
   constructor(
     @InjectRepository(Sponsor)
     private readonly sponsorRepo: Repository<Sponsor>,
+    @InjectRepository(FollowUpSettings)
+    private readonly settingsRepo: Repository<FollowUpSettings>,
+    private readonly mailService: MailService,
+    private readonly usersService: UsersService,
   ) {}
 
-  @Cron('*/10 * * * *')
+  // Effectively a singleton row — get-or-create so the app works even if the
+  // migration's seed row is somehow missing (e.g. a hand-rolled test DB).
+  async getSettings(): Promise<FollowUpSettings> {
+    const existing = await this.settingsRepo.find({ take: 1 });
+    if (existing[0]) return existing[0];
+    return this.settingsRepo.save(this.settingsRepo.create({}));
+  }
+
+  async updateSettings(
+    dto: UpdateFollowUpSettingsDto,
+    actorUserId: string,
+  ): Promise<FollowUpSettings> {
+    const settings = await this.getSettings();
+    settings.delayDays = dto.delayDays;
+    settings.updatedByUserId = actorUserId;
+    return this.settingsRepo.save(settings);
+  }
+
+  // Polling hourly is independent of the (admin-configurable) delay itself —
+  // a reminder email doesn't need minute-level precision, so only the delay
+  // is exposed as a setting, not this schedule.
+  @Cron(CronExpression.EVERY_HOUR)
   async processQueue(): Promise<void> {
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const settings = await this.getSettings().catch((err: unknown) => {
+      this.logger.error('Failed to load follow-up settings', err);
+      return null;
+    });
+    if (!settings) return;
+
+    const cutoff = new Date(Date.now() - settings.delayDays * DAY_MS);
 
     let due: Sponsor[];
     try {
@@ -36,37 +61,32 @@ export class FollowUpService {
           followUpSentAt: IsNull(),
           createdAt: LessThanOrEqual(cutoff),
         },
+        // The follow-up queue only needs sponsor contact details. Avoid loading
+        // the eager child relation so this scheduled job remains independent
+        // of child profile schema changes and performs a smaller query.
+        loadEagerRelations: false,
       });
     } catch (err) {
-      this.logger.error('Failed to query sponsors for follow-up (DB connection issue?)', err);
+      this.logger.error(
+        'Failed to query sponsors for follow-up (DB connection issue?)',
+        err,
+      );
       return;
     }
 
     if (due.length === 0) return;
 
-    const heroImage = fs.readFileSync(
-      path.join(__dirname, 'templates', 'kids.jpeg'),
-    );
-
     for (const sponsor of due) {
       try {
-        await this.client.send({
-          from: SENDER,
-          to: [{ email: sponsor.email }],
-          subject: "Let's find your little bestie – Complete your profile",
-          html: this.renderTemplate('sponsorship_profile', {
+        const credentials = await this.provisionPortalAccount(sponsor);
+        await this.mailService.send({
+          triggerKey: 'sponsor.profile-reminder',
+          to: sponsor.email,
+          data: {
             name: sponsor.name,
             year: String(new Date().getFullYear()),
-          }),
-          attachments: [
-            {
-              filename: 'kids.jpeg',
-              type: 'image/jpeg',
-              content: heroImage,
-              disposition: 'inline',
-              content_id: 'profile-hero',
-            },
-          ],
+            ...credentials,
+          },
         });
         sponsor.followUpSentAt = new Date();
         await this.sponsorRepo.save(sponsor);
@@ -77,11 +97,35 @@ export class FollowUpService {
     }
   }
 
-  private renderTemplate(name: string, context: Record<string, string>): string {
-    const file = fs.readFileSync(
-      path.join(__dirname, 'templates', `${name}.hbs`),
-      'utf8',
-    );
-    return handlebars.compile(file)(context);
+  // Provisions the sponsor's portal login at follow-up time so the reminder
+  // can carry real credentials. If an account already exists (e.g. an admin
+  // provisioned one manually before the cron got to this sponsor), no new
+  // password is generated — the sponsor keeps whatever they already have,
+  // and the email links them to login without repeating credentials.
+  //
+  // temporaryPassword is always included, as '' when there's nothing to
+  // show — never omitted. mergeContext() fills any *omitted* declared field
+  // with its dataSchema sample value, so leaving this out on the
+  // already-provisioned path would render the fake example password
+  // ('Kx7...redacted') as if it were real.
+  private async provisionPortalAccount(
+    sponsor: Sponsor,
+  ): Promise<{ email: string; loginUrl: string; temporaryPassword: string }> {
+    const frontendUrl = process.env.MIS_FRONTEND_URL || 'http://localhost:3000';
+    const loginUrl = `${frontendUrl}/login?next=/portal/preferences`;
+
+    try {
+      const { temporaryPassword } =
+        await this.usersService.createSponsorAccount({
+          sponsorId: sponsor.id,
+          skipEmail: true,
+        });
+      return { email: sponsor.email, loginUrl, temporaryPassword };
+    } catch (err) {
+      if (err instanceof ConflictException) {
+        return { email: sponsor.email, loginUrl, temporaryPassword: '' };
+      }
+      throw err;
+    }
   }
 }
