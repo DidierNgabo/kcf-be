@@ -6,6 +6,7 @@ import { EmailLayout } from './entities/email-layout.entity';
 import { EmailTemplate } from './entities/email-template.entity';
 import { EmailTemplateVersion } from './entities/email-template-version.entity';
 import { EmailLog } from './entities/email-log.entity';
+import { EmailAsset } from './entities/email-asset.entity';
 import { TriggerRegistryService } from './registry/trigger-registry.service';
 import { TemplateResolverService } from './rendering/resolver.service';
 import { TemplateCacheService } from './rendering/template-cache.service';
@@ -22,6 +23,9 @@ import {
 import { MailTriggersController } from './controllers/mail-triggers.controller';
 import { EmailLayoutsController } from './controllers/email-layouts.controller';
 import { EmailTemplatesController } from './controllers/email-templates.controller';
+import { EmailAssetsController } from './controllers/email-assets.controller';
+import { EmailAssetsService } from './email-assets.service';
+import { StorageModule } from '../storage/storage.module';
 
 import { SponsorAcknowledgmentTrigger } from './triggers/sponsor-acknowledgment.trigger';
 import { SponsorInquiryReceivedTrigger } from './triggers/sponsor-inquiry-received.trigger';
@@ -51,9 +55,11 @@ const TRIGGERS = [
       EmailTemplate,
       EmailTemplateVersion,
       EmailLog,
+      EmailAsset,
       Sponsor,
     ]),
     DiscoveryModule,
+    StorageModule,
     BullModule.forRoot({ connection: mailRedisConnection }),
     BullModule.registerQueue({ name: MAIL_QUEUE_NAME }),
   ],
@@ -61,6 +67,7 @@ const TRIGGERS = [
     MailTriggersController,
     EmailLayoutsController,
     EmailTemplatesController,
+    EmailAssetsController,
   ],
   providers: [
     ...TRIGGERS,
@@ -72,6 +79,7 @@ const TRIGGERS = [
     MailProcessor,
     MailService,
     EmailTemplatesService,
+    EmailAssetsService,
     MailRedisLifecycle,
   ],
   exports: [MailService],

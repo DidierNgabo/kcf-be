@@ -24,6 +24,7 @@ import { EmailLayout } from './mail/entities/email-layout.entity';
 import { EmailTemplate } from './mail/entities/email-template.entity';
 import { EmailTemplateVersion } from './mail/entities/email-template-version.entity';
 import { EmailLog } from './mail/entities/email-log.entity';
+import { EmailAsset } from './mail/entities/email-asset.entity';
 import { MailModule } from './mail/mail.module';
 import { AttendanceDay } from './attendance/entities/attendance-day.entity';
 import { AttendanceRecord } from './attendance/entities/attendance-record.entity';
@@ -57,6 +58,7 @@ import { AttendanceModule } from './attendance/attendance.module';
         EmailTemplate,
         EmailTemplateVersion,
         EmailLog,
+        EmailAsset,
         AttendanceDay,
         AttendanceRecord,
       ],

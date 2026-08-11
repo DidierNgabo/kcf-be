@@ -8,7 +8,7 @@ import { UpdateFollowUpSettingsDto } from './dto/update-follow-up-settings.dto';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const MINUTE_MS = 60 * 1000;
 
 @Injectable()
 export class FollowUpService {
@@ -36,15 +36,15 @@ export class FollowUpService {
     actorUserId: string,
   ): Promise<FollowUpSettings> {
     const settings = await this.getSettings();
-    settings.delayDays = dto.delayDays;
+    settings.delayMinutes = dto.delayMinutes;
     settings.updatedByUserId = actorUserId;
     return this.settingsRepo.save(settings);
   }
 
-  // Polling hourly is independent of the (admin-configurable) delay itself —
-  // a reminder email doesn't need minute-level precision, so only the delay
-  // is exposed as a setting, not this schedule.
-  @Cron(CronExpression.EVERY_HOUR)
+  // The delay is now configurable down to the minute, so the poll itself
+  // has to run at least that often — hourly polling would silently turn a
+  // "5 minutes" setting into "up to ~65 minutes."
+  @Cron(CronExpression.EVERY_MINUTE)
   async processQueue(): Promise<void> {
     const settings = await this.getSettings().catch((err: unknown) => {
       this.logger.error('Failed to load follow-up settings', err);
@@ -52,7 +52,7 @@ export class FollowUpService {
     });
     if (!settings) return;
 
-    const cutoff = new Date(Date.now() - settings.delayDays * DAY_MS);
+    const cutoff = new Date(Date.now() - settings.delayMinutes * MINUTE_MS);
 
     let due: Sponsor[];
     try {

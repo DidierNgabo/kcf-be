@@ -1,532 +1,70 @@
-<html lang='en'>
-  <head>
-    <meta charset='UTF-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-    <title>Let's Find Your Little Bestie – Kwizera Charity Foundation</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: #f0f0f0;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-      img {
-        border: 0;
-        display: block;
-      }
-      a {
-        color: inherit;
-      }
+<!-- Hero -->
+<div class="hero">
+  <img src="cid:profile-hero" alt="KCF children" width="600" />
+</div>
 
-      .wrapper {
-        max-width: 600px;
-        margin: 40px auto;
-        background: #ffffff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-      }
+<div class="section">
+  <h1 class="title">Let's Find Your Little Bestie</h1>
 
-      /* Header */
-      .header {
-        background-color: #e8b84b;
-        padding: 32px 40px;
-        text-align: center;
-      }
-      .header-icon {
-        font-size: 30px;
-        color: #2d3748;
-        line-height: 1;
-        margin-bottom: 10px;
-      }
-      .header h1 {
-        margin: 0 0 6px;
-        color: #2d3748;
-        font-size: 24px;
-        font-weight: bold;
-        letter-spacing: 0.3px;
-      }
-      .header p {
-        margin: 0;
-        color: #4a5568;
-        font-size: 13px;
-      }
+  <div class="letter">
+    <p>Dear <strong>{{name}}</strong>,</p>
+    <p>Help us understand what matters most to you so we can create the perfect match. Every child is unique, and your preferences will help us find the child whose journey will resonate with your heart.</p>
+  </div>
 
-      /* Hero */
-      .hero {
-        position: relative;
-        line-height: 0;
-      }
-      .hero img {
-        width: 100%;
-        max-height: 280px;
-        object-fit: cover;
-      }
-      .hero-badge {
-        display: inline-block;
-        background: #e8b84b;
-        color: #2d3748;
-        font-weight: bold;
-        font-size: 13px;
-        padding: 8px 18px;
-        border-radius: 50px;
-        margin: -20px 0 0 28px;
-        position: relative;
-        z-index: 1;
-      }
-
-      /* Body */
-      .body {
-        padding: 32px 44px 40px;
-        color: #4a5568;
-        font-size: 15px;
-        line-height: 1.8;
-      }
-      .body p {
-        margin: 0 0 16px;
-      }
-      .section-title {
-        font-size: 21px;
-        font-weight: bold;
-        color: #2d3748;
-        text-align: center;
-        margin: 0 0 10px;
-      }
-      .section-subtitle {
-        text-align: center;
-        color: #718096;
-        font-size: 14px;
-        line-height: 1.6;
-        margin: 0 0 28px;
-      }
-
-      /* Preference rows */
-      .pref-section-title {
-        font-size: 17px;
-        font-weight: bold;
-        color: #2d3748;
-        margin: 0 0 16px;
-      }
-      .pref-icon {
-        width: 46px;
-        height: 46px;
-        background: #e8b84b;
-        border-radius: 50%;
-        text-align: center;
-        font-size: 20px;
-        line-height: 46px;
-        vertical-align: top;
-      }
-      .pref-cell {
-        padding-left: 16px;
-        vertical-align: top;
-        padding-bottom: 18px;
-      }
-      .pref-cell h4 {
-        margin: 2px 0 4px;
-        color: #2d3748;
-        font-size: 15px;
-        font-weight: bold;
-      }
-      .pref-cell p {
-        margin: 0;
-        font-size: 14px;
-        color: #4a5568;
-        line-height: 1.6;
-      }
-      .pref-bg {
-        background: #fdf6ec;
-        border-radius: 8px;
-        padding: 16px 20px;
-        margin-bottom: 10px;
-      }
-
-      /* CTA */
-      .cta {
-        text-align: center;
-        margin: 28px 0 8px;
-      }
-      .cta a {
-        background: #e8b84b;
-        color: #2d3748;
-        text-decoration: none;
-        padding: 16px 40px;
-        border-radius: 50px;
-        font-weight: bold;
-        font-size: 15px;
-        display: inline-block;
-      }
-      .cta-sub {
-        text-align: center;
-        color: #718096;
-        font-size: 13px;
-        margin: 8px 0 28px;
-      }
-
-      /* Divider */
-      .divider {
-        border: none;
-        border-top: 1px solid #e2e8f0;
-        margin: 28px 0;
-      }
-
-      /* Pack section */
-      .pack-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #2d3748;
-        text-align: center;
-        margin: 0 0 10px;
-      }
-      .pack-subtitle {
-        text-align: center;
-        color: #718096;
-        font-size: 14px;
-        line-height: 1.6;
-        margin: 0 0 20px;
-      }
-      .pack-card {
-        border: 2px solid #e8b84b;
-        border-radius: 10px;
-        padding: 18px 20px;
-        margin-bottom: 14px;
-      }
-      .pack-icon {
-        width: 52px;
-        height: 52px;
-        background: #fdf6ec;
-        border-radius: 8px;
-        text-align: center;
-        font-size: 22px;
-        line-height: 52px;
-        vertical-align: top;
-      }
-      .pack-cell {
-        padding-left: 16px;
-        vertical-align: top;
-      }
-      .pack-cell h4 {
-        margin: 2px 0 6px;
-        color: #2d3748;
-        font-size: 15px;
-        font-weight: bold;
-      }
-      .pack-cell p {
-        margin: 0 0 10px;
-        font-size: 14px;
-        color: #4a5568;
-        line-height: 1.5;
-      }
-      .pack-tag {
-        display: inline-block;
-        border: 1px solid #d1d5db;
-        border-radius: 20px;
-        padding: 3px 12px;
-        font-size: 12px;
-        color: #4a5568;
-      }
-
-      /* Safety card */
-      .safety {
-        border: 2px solid #e8b84b;
-        border-radius: 10px;
-        padding: 20px 24px;
-        margin: 4px 0 24px;
-        background: #fffdf5;
-      }
-      .safety-header {
-        margin-bottom: 12px;
-      }
-      .safety-icon {
-        font-size: 22px;
-        vertical-align: middle;
-        margin-right: 10px;
-        color: #2d3748;
-      }
-      .safety h4 {
-        display: inline;
-        margin: 0;
-        color: #2d3748;
-        font-size: 15px;
-        font-weight: bold;
-        vertical-align: middle;
-      }
-      .safety p {
-        margin: 0 0 12px;
-        font-size: 14px;
-        color: #4a5568;
-        line-height: 1.6;
-      }
-      .check-item {
-        margin-bottom: 8px;
-        font-size: 14px;
-        color: #4a5568;
-      }
-      .check-mark {
-        color: #e8b84b;
-        font-weight: bold;
-        margin-right: 8px;
-      }
-
-      /* Signoff */
-      .signoff {
-        text-align: center;
-        color: #4a5568;
-        font-size: 15px;
-        padding-top: 8px;
-      }
-      .signoff p {
-        margin: 0 0 4px;
-      }
-
-      /* Footer */
-      .footer {
-        background: #fdf6ec;
-        padding: 32px 40px;
-        text-align: center;
-      }
-      .footer-title {
-        font-weight: bold;
-        color: #2d3748;
-        font-size: 15px;
-        margin: 0 0 16px;
-      }
-      .social-icons {
-        margin: 0 0 20px;
-      }
-      .social-icon {
-        display: inline-block;
-        width: 42px;
-        height: 42px;
-        border: 1px solid #e2d3b8;
-        border-radius: 50%;
-        margin: 0 4px;
-        line-height: 42px;
-        text-align: center;
-        color: #4a5568;
-        text-decoration: none;
-        font-size: 17px;
-        background: #ffffff;
-      }
-      .footer-info {
-        color: #718096;
-        font-size: 13px;
-        line-height: 1.9;
-        margin: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class='wrapper'>
-
-      <!-- Header -->
-      <div class='header'>
-        <div class='header-icon'>&#9829;</div>
-        <h1>Kwizera Charity Foundation</h1>
-        <p>Building brighter futures in Kigali, Rwanda</p>
+  <!-- Preferences -->
+  <h2 class="section-title">Tell Us About Your Preferences</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Child Interests</h3>
+        <p>Do you have a preference for a child who loves sports, arts, science, or music? We'll match you with someone who shares your passions.</p>
       </div>
-
-      <!-- Hero image + badge -->
-      <div class='hero'>
-        <img src='cid:profile-hero' alt='KCF children' width='600' />
-      </div>
-      <div style='background:#ffffff; padding: 0; line-height:1;'>
-        <span class='hero-badge'>Step 2 of 3: Complete Your Profile</span>
-      </div>
-
-      <!-- Body -->
-      <div class='body'>
-        <p class='section-title'>Let's Find Your Little Bestie</p>
-        <p class='section-subtitle'>Help us understand what matters most to you
-          so we can create the perfect match. Every child is unique, and your
-          preferences will help us find the child whose journey will resonate
-          with your heart.</p>
-
-        <!-- Preferences -->
-        <p class='pref-section-title'>Tell Us About Your Preferences</p>
-        <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-          <tr>
-            <td colspan='2'>
-              <div class='pref-bg'>
-                <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-                  <tr>
-                    <td class='pref-icon' width='46'>&#10022;</td>
-                    <td class='pref-cell'>
-                      <h4>Child Interests</h4>
-                      <p>Do you have a preference for a child who loves sports,
-                        arts, science, or music? We'll match you with someone
-                        who shares your passions.</p>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td colspan='2'>
-              <div class='pref-bg'>
-                <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-                  <tr>
-                    <td class='pref-icon' width='46'>&#128218;</td>
-                    <td class='pref-cell'>
-                      <h4>School Goals</h4>
-                      <p>Would you like to support a child in primary school,
-                        secondary school, or pursuing specific educational
-                        dreams? Your support shapes their future.</p>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td colspan='2'>
-              <div class='pref-bg'>
-                <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-                  <tr>
-                    <td class='pref-icon' width='46'>&#128101;</td>
-                    <td class='pref-cell'>
-                      <h4>Hobbies and Talents</h4>
-                      <p>From storytelling to football, every child has unique
-                        gifts. Tell us what inspires you, and we'll find a
-                        perfect personality match.</p>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td colspan='2'>
-              <div class='pref-bg'>
-                <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-                  <tr>
-                    <td class='pref-icon' width='46'>&#128172;</td>
-                    <td class='pref-cell'>
-                      <h4>Communication Preferences</h4>
-                      <p>How would you like to stay connected? Monthly letters,
-                        video messages, photos, or regular updates—you decide
-                        the rhythm of your relationship.</p>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-            </td>
-          </tr>
-        </table>
-
-        <!-- CTA -->
-        <div class='cta'>
-          <a href='https://www.typeform.com/'>Complete Your Sponsorship Profile</a>
-        </div>
-        <p class='cta-sub'>Takes about 5 minutes</p>
-
-        <hr class='divider' />
-
-        <!-- Sponsorship Pack -->
-        <p class='pack-title'>Your Sponsorship Pack &amp; Agreement</p>
-        <p class='pack-subtitle'>Once we find your match, you'll receive a
-          comprehensive digital sponsorship pack with everything you need to
-          begin this meaningful journey.</p>
-
-        <div class='pack-card'>
-          <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-            <tr>
-              <td class='pack-icon' width='52'>&#128196;</td>
-              <td class='pack-cell'>
-                <h4>Sponsorship Guide</h4>
-                <p>A comprehensive PDF guide explaining how sponsorship works,
-                  what to expect, and how your contribution makes a difference.</p>
-                <span class='pack-tag'>PDF Document</span>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <div class='pack-card'>
-          <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-            <tr>
-              <td class='pack-icon' width='52'>&#9829;</td>
-              <td class='pack-cell'>
-                <h4>Child Welcome Pack</h4>
-                <p>Beautiful virtual introduction to your sponsored child,
-                  including their story, photos, dreams, and a personal welcome
-                  message.</p>
-                <span class='pack-tag'>Digital Pack</span>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <div class='pack-card'>
-          <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-            <tr>
-              <td class='pack-icon' width='52'>&#128737;</td>
-              <td class='pack-cell'>
-                <h4>Sponsorship Agreement</h4>
-                <p>Clear terms outlining your commitment, our responsibilities,
-                  and the safeguarding measures we have in place to protect
-                  every child.</p>
-                <span class='pack-tag'>Digital Signature</span>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- Safety card -->
-        <div class='safety'>
-          <div class='safety-header'>
-            <span class='safety-icon'>&#128737;</span>
-            <h4>Child Safety &amp; Transparency</h4>
-          </div>
-          <p>Your sponsored child's safety is our top priority. All interactions
-            are monitored by our safeguarding team, and we maintain the highest
-            standards of child protection.</p>
-          <div class='check-item'><span
-              class='check-mark'
-            >&#10003;</span>Regular progress reports and impact updates</div>
-          <div class='check-item'><span class='check-mark'>&#10003;</span>Full
-            financial transparency on how funds are used</div>
-          <div class='check-item'><span
-              class='check-mark'
-            >&#10003;</span>Certified safeguarding and child protection policies</div>
-        </div>
-
-        <!-- Signoff -->
-        <div class='signoff'>
-          <p>We're excited to help you find your perfect match,</p>
-          <p><strong>The Kwizera Team</strong></p>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class='footer'>
-        <p class='footer-title'>Stay Connected</p>
-        <div class='social-icons'>
-          <a
-            href='https://kwizeracharityfoundation.org'
-            class='social-icon'
-          >&#127760;</a>
-          <a
-            href='https://instagram.com/kwizeracharityfoundation'
-            class='social-icon'
-          >&#128247;</a>
-          <a
-            href='https://facebook.com/kwizeracharityfoundation'
-            class='social-icon'
-          >f</a>
-          <a
-            href='mailto:info@kwizeracharityfoundation.org'
-            class='social-icon'
-          >&#9993;</a>
-        </div>
-        <p class='footer-info'>
-          Kwizera Charity Foundation<br />
-          Kigali, Rwanda<br />
-          info@kwizeracharityfoundation.org
-        </p>
-      </div>
-
     </div>
-  </body>
-</html>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>School Goals</h3>
+        <p>Would you like to support a child in primary school, secondary school, or pursuing specific educational dreams?</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Hobbies and Talents</h3>
+        <p>From storytelling to football, every child has unique gifts. Tell us what inspires you.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Communication Preferences</h3>
+        <p>How would you like to stay connected? Monthly letters, video messages, photos, or regular updates.</p>
+      </div>
+    </div>
+  </div>
+
+  {{#if temporaryPassword}}
+  <!-- Login details, first-time only -->
+  <div class="story-card">
+    <h2>Your Sponsor Portal Login</h2>
+    <p>Email: {{email}}</p>
+    <p>Temporary password: {{temporaryPassword}}</p>
+  </div>
+  {{/if}}
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <a href="{{loginUrl}}" class="cta">Complete Your Sponsorship Profile</a>
+  </div>
+
+  <div class="letter">
+    <p>Once we find your match, you'll receive a comprehensive digital sponsorship pack — a sponsorship guide, a welcome pack introducing your child, and a sponsorship agreement outlining our safeguarding measures. Your sponsored child's safety is our top priority: every interaction is monitored by our safeguarding team, with full financial transparency and certified child-protection policies.</p>
+  </div>
+
+  <!-- Signoff -->
+  <p class="signoff">
+    We're excited to help you find your perfect match,<br>
+    <span class="team">The Kwizera Team</span>
+  </p>
+</div>

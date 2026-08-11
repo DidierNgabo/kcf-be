@@ -10,6 +10,10 @@ import { RendererService } from '../rendering/renderer.service';
 import { mergeContext } from '../rendering/context-builder';
 import { MailtrapProviderAdapter } from '../provider/mailtrap-provider.adapter';
 import { MAIL_QUEUE_NAME, MailJobData } from './mail-queue.constants';
+import {
+  SHARED_EMAIL_ATTACHMENTS,
+  SHARED_EMAIL_LAYOUT_HTML,
+} from '../triggers/shared-layout';
 
 @Processor(MAIL_QUEUE_NAME, { concurrency: 5 })
 export class MailProcessor extends WorkerHost {
@@ -26,15 +30,27 @@ export class MailProcessor extends WorkerHost {
   }
 
   async process(job: Job<MailJobData>): Promise<void> {
-    const { emailLogId, triggerKey, to, data, locale, templateId } = job.data;
+    const { emailLogId, triggerKey, to, data, templateId } = job.data;
     await this.logRepo.update(emailLogId, {
       attemptCount: job.attemptsMade + 1,
     });
 
     const trigger = this.registry.getByKey(triggerKey);
+    // Temporarily bypassing the DB-backed template editor for trigger-fired
+    // sends — every automatic email always renders from its code-shipped
+    // Handlebars default, wrapped in the shared branded layout, until the
+    // editor UX work resumes. resolveByTemplateId(...) below is untouched —
+    // it backs the admin "send test" / "send broadcast" actions only.
     const resolved = templateId
       ? await this.resolver.resolveByTemplateId(templateId)
-      : await this.resolver.resolve(triggerKey, locale);
+      : {
+          templateId: null,
+          versionId: null,
+          subjectTemplate: trigger.defaults.subject,
+          bodyTemplate: trigger.defaults.bodyHtml,
+          layoutHtml: SHARED_EMAIL_LAYOUT_HTML,
+          fromCodeDefault: true,
+        };
     const context = mergeContext(trigger.dataSchema, data, to);
     const { subject, html, text } = this.renderer.render({
       subjectTemplate: resolved.subjectTemplate,
@@ -49,7 +65,10 @@ export class MailProcessor extends WorkerHost {
         subject,
         html,
         text,
-        attachments: trigger.staticAttachments,
+        attachments: [
+          ...SHARED_EMAIL_ATTACHMENTS,
+          ...(trigger.staticAttachments ?? []),
+        ],
       });
       await this.logRepo.update(emailLogId, {
         templateId: resolved.templateId,

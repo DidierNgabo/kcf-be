@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{app.name}}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #E9ECF2;
+    color: #364153;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #FFFFFF;
+  }
+
+  /* ---------- Header ---------- */
+  .header {
+    text-align: center;
+    padding: 36px 32px 0;
+  }
+  .logo {
+    width: 140px;
+    height: auto;
+    margin: 0 auto 22px;
+    display: block;
+  }
+  .tagline {
+    font-size: 16px;
+    line-height: 22px;
+    color: #364153;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Hero image ---------- */
+  .hero {
+    margin: 26px 0 0;
+  }
+  .hero img {
+    width: 100%;
+    display: block;
+    height: auto;
+  }
+
+  /* ---------- Body ---------- */
+  .section { padding: 0 32px; }
+
+  h1.title {
+    font-size: 22px;
+    line-height: 27px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .letter {
+    font-size: 16px;
+    line-height: 26px;
+    margin-top: 30px;
+  }
+  .letter p { margin-bottom: 18px; }
+  .letter p:last-child { margin-bottom: 0; }
+
+  /* ---------- Story / info card ---------- */
+  .story-card {
+    background: #3859A6;
+    border-radius: 10px;
+    color: #FFFFFF;
+    padding: 30px 26px;
+    margin: 36px 0 0;
+  }
+  .story-card h2 {
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .story-card p {
+    font-size: 15px;
+    line-height: 25px;
+    margin-bottom: 14px;
+  }
+  .story-card p:last-child { margin-bottom: 0; }
+
+  /* ---------- Steps ---------- */
+  h2.section-title {
+    font-size: 20px;
+    line-height: 25px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 42px;
+  }
+
+  .steps { margin-top: 30px; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step-num {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #3859A6;
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-body { padding-top: 2px; }
+  .step-body h3 {
+    font-size: 15px;
+    line-height: 19px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .step-body p {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* ---------- Quote ---------- */
+  .quote {
+    border-left: 4px solid #3859A6;
+    padding-left: 22px;
+    margin-top: 40px;
+  }
+  .quote blockquote {
+    font-style: italic;
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .quote-author {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 22px;
+  }
+  .avatar {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #3859A6;
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .quote-author .name {
+    font-style: italic;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+  }
+  .quote-author .role {
+    font-style: italic;
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* ---------- CTA ---------- */
+  .cta-wrap { text-align: center; margin-top: 40px; }
+  .cta {
+    display: inline-block;
+    background: #3859A6;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 19px;
+    padding: 18px 34px;
+    border-radius: 50px;
+  }
+
+  .fallback-link {
+    word-break: break-all;
+    font-size: 13px;
+    color: #6a7282;
+    margin-top: 14px;
+  }
+
+  .signoff {
+    text-align: center;
+    font-size: 16px;
+    line-height: 28px;
+    margin-top: 30px;
+    padding-bottom: 44px;
+  }
+  .signoff .team { font-weight: 700; }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    background: #3859A6;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 36px 32px 50px;
+  }
+  .footer h4 {
+    font-size: 16px;
+    line-height: 19px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .socials {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 26px;
+  }
+  .social {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .social svg { width: 22px; height: 22px; }
+  .footer p {
+    font-size: 14px;
+    line-height: 28px;
+  }
+  .footer a {
+    color: #FFFFFF;
+    text-decoration: underline;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 640px) {
+    .section { padding: 0 20px; }
+    .header { padding: 28px 20px 0; }
+    h1.title { font-size: 20px; margin-top: 32px; }
+    .letter { font-size: 15px; }
+    .story-card { padding: 24px 20px; }
+    h2.section-title { margin-top: 32px; }
+    .cta { padding: 16px 28px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <header class="header">
+      <img src="cid:kcf-logo" class="logo" alt="{{app.name}}">
+      <p class="tagline">We see a Rwanda where every child lives up to their full potential.</p>
+    </header>
+
+    {{{body}}}
+
+    <!-- Footer -->
+    <footer class="footer">
+      <h4>Stay Connected</h4>
+      <div class="socials">
+        <a href="https://kwizeracharityfoundation.org" class="social" aria-label="Website">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3859A6" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/kwizeracharityfoundation" class="social" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3859A6" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#3859A6" stroke="none"/></svg>
+        </a>
+        <a href="https://www.facebook.com/KwizeraCharityFoundation" class="social" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" fill="#3859A6"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="mailto:info@kwizeracharityfoundation.org" class="social" aria-label="Email">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3859A6" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+        </a>
+      </div>
+      <p>Kwizera Charity Foundation</p>
+      <p>Kigali, Rwanda</p>
+      <p><a href="mailto:info@kwizeracharityfoundation.org">info@kwizeracharityfoundation.org</a></p>
+    </footer>
+
+  </div>
+</body>
+</html>

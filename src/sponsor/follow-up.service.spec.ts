@@ -25,7 +25,9 @@ describe('FollowUpService', () => {
       save: jest.fn((s: unknown) => Promise.resolve(s)),
     };
     settingsRepo = {
-      find: jest.fn().mockResolvedValue([{ id: 'set1', delayDays: 5 }]),
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: 'set1', delayMinutes: 5 * 24 * 60 }]),
       save: jest.fn((s: unknown) => Promise.resolve(s)),
       create: jest.fn((s: unknown) => s),
     };
@@ -43,7 +45,7 @@ describe('FollowUpService', () => {
   describe('getSettings', () => {
     it('returns the existing singleton row', async () => {
       const settings = await service.getSettings();
-      expect(settings).toEqual({ id: 'set1', delayDays: 5 });
+      expect(settings).toEqual({ id: 'set1', delayMinutes: 5 * 24 * 60 });
       expect(settingsRepo.save).not.toHaveBeenCalled();
     });
 
@@ -61,7 +63,7 @@ describe('FollowUpService', () => {
       expect(mailService.send).not.toHaveBeenCalled();
     });
 
-    it('uses the configured delayDays (not a hardcoded value) to compute the cutoff', async () => {
+    it('uses the configured delayMinutes (not a hardcoded value) to compute the cutoff', async () => {
       const fixedNow = new Date('2026-01-15T12:00:00.000Z').getTime();
       jest.spyOn(Date, 'now').mockReturnValue(fixedNow);
 

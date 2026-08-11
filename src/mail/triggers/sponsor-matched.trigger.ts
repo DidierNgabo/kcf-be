@@ -80,6 +80,14 @@ const bodyHtml = fs.readFileSync(
       description: 'Current year, for the footer',
       example: '2026',
     },
+    {
+      name: 'childPhotoUrl',
+      type: 'string',
+      description:
+        "Public URL of the child's photo, only set when their guardian has granted photo consent. Empty when consent isn't granted or no photo is on file — the template falls back to a generic photo.",
+      example:
+        'https://pub-example.r2.dev/email-assets/sponsor-photos/child-1.jpg',
+    },
   ],
   defaults: {
     subject: "You've been matched with {{childName}}! – KCF",

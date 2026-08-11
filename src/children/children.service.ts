@@ -11,6 +11,7 @@ import { ChildEducation } from './entities/child-education.entity';
 import { ChildGuardian } from './entities/child-guardian.entity';
 import { Child } from './entities/child.entity';
 import { ChildStatus, ConsentStatus, ConsentType } from './enums/child.enums';
+import { latestConsentStatus } from './consent.util';
 import { AuditService } from '../audit/audit.service';
 
 @Injectable()
@@ -27,6 +28,7 @@ export class ChildrenService {
       .leftJoinAndSelect('child.guardians', 'guardian')
       .leftJoinAndSelect('child.consents', 'consent')
       .leftJoinAndSelect('child.media', 'media')
+      .leftJoinAndSelect('child.sponsors', 'sponsor')
       .distinct(true);
     if (query.search) {
       qb.andWhere(new Brackets((where) => where
@@ -45,7 +47,7 @@ export class ChildrenService {
     const [active, archived, incomplete] = await Promise.all([
       this.repo.count({ where: { status: ChildStatus.ACTIVE } }),
       this.repo.count({ where: { status: ChildStatus.ARCHIVED } }),
-      this.repo.count({ where: [{ dateOfBirth: IsNull() }, { kcfNumber: IsNull() }] }),
+      this.repo.count({ where: { dateOfBirth: IsNull() } }),
     ]);
     return {
       data: children.map((child) => this.toDto(child)),
@@ -62,18 +64,22 @@ export class ChildrenService {
   async findEntityById(id: string) {
     const child = await this.repo.findOne({
       where: { id },
-      relations: { educationRecords: true, guardians: true, consents: true, media: true },
+      relations: { educationRecords: true, guardians: true, consents: true, media: true, sponsors: true },
     });
     if (!child) throw new NotFoundException(`Child with id "${id}" not found`);
     return child;
   }
 
+  saveEntity(child: Child): Promise<Child> {
+    return this.repo.save(child);
+  }
+
   async create(dto: CreateChildDto, userId?: string) {
     return this.dataSource.transaction(async (manager) => {
-      if (await manager.exists(Child, { where: { kcfNumber: dto.kcfNumber } })) {
+      if (dto.kcfNumber && await manager.exists(Child, { where: { kcfNumber: dto.kcfNumber } })) {
         throw new ConflictException(`KCF number "${dto.kcfNumber}" already exists`);
       }
-      const child = manager.create(Child, this.childFields(dto));
+      const child = manager.create(Child, { ...this.childFields(dto), kcfNumber: dto.kcfNumber ?? null });
       await manager.save(child);
       await this.replaceNested(manager, child, dto, userId);
       await this.audit.record('child.created', 'child', child.id, userId, { kcfNumber: child.kcfNumber }, manager);
@@ -162,7 +168,7 @@ export class ChildrenService {
   private async findDtoWithManager(manager: EntityManager, id: string) {
     const child = await manager.findOne(Child, {
       where: { id },
-      relations: { educationRecords: true, guardians: true, consents: true, media: true },
+      relations: { educationRecords: true, guardians: true, consents: true, media: true, sponsors: true },
     });
     if (!child) throw new NotFoundException(`Child with id "${id}" not found`);
     return this.toDto(child);
@@ -170,10 +176,7 @@ export class ChildrenService {
 
   private toDto(child: Child) {
     const education = child.educationRecords?.find((record) => record.isCurrent) ?? null;
-    const latestConsent = (type: ConsentType) =>
-      child.consents?.filter((item) => item.type === type)
-        .sort((a, b) => +new Date(b.effectiveAt) - +new Date(a.effectiveAt))[0]?.status ??
-      ConsentStatus.PENDING;
+    const latestConsent = (type: ConsentType) => latestConsentStatus(child.consents, type);
     return {
       id: child.id, kcfNumber: child.kcfNumber, name: child.name, age: child.age,
       gender: child.gender, dateOfBirth: child.dateOfBirth, enrolmentDate: child.enrolmentDate,
@@ -190,6 +193,8 @@ export class ChildrenService {
       guardianRelationship: child.guardians?.find((item) => item.isPrimary)?.relationship ?? child.guardians?.[0]?.relationship ?? null,
       guardianConsent: latestConsent(ConsentType.GUARDIAN) === ConsentStatus.GRANTED,
       photoConsentStatus: latestConsent(ConsentType.PHOTO) === ConsentStatus.GRANTED,
+      sponsored: Boolean(child.sponsors?.length),
+      sponsorshipStartDate: child.sponsorshipStartDate,
       createdAt: child.createdAt, updatedAt: child.updatedAt,
     };
   }

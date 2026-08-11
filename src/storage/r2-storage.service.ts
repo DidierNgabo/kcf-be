@@ -1,6 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  CopyObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -16,12 +17,14 @@ export class R2StorageService implements StorageService {
   private readonly endpoint: string;
   private readonly accessKeyId: string;
   private readonly secretAccessKey: string;
+  private readonly publicBaseUrl: string;
 
   constructor(config: ConfigService) {
     this.bucket = config.get<string>('R2_BUCKET_NAME', '');
     this.endpoint = config.get<string>('R2_ENDPOINT', '');
     this.accessKeyId = config.get<string>('R2_ACCESS_KEY_ID', '');
     this.secretAccessKey = config.get<string>('R2_SECRET_ACCESS_KEY', '');
+    this.publicBaseUrl = config.get<string>('STORAGE_PUBLIC_BASE_URL', '');
     this.client = new S3Client({
       region: 'auto',
       endpoint: this.endpoint,
@@ -90,5 +93,20 @@ export class R2StorageService implements StorageService {
       sizeBytes: result.ContentLength ?? 0,
       mimeType: result.ContentType,
     };
+  }
+
+  async copyObject(sourceKey: string, destinationKey: string): Promise<void> {
+    this.assertConfigured();
+    await this.client.send(
+      new CopyObjectCommand({
+        Bucket: this.bucket,
+        CopySource: `${this.bucket}/${encodeURIComponent(sourceKey)}`,
+        Key: destinationKey,
+      }),
+    );
+  }
+
+  getPublicUrl(objectKey: string): string {
+    return `${this.publicBaseUrl.replace(/\/$/, '')}/${objectKey}`;
   }
 }

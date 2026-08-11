@@ -54,6 +54,6 @@ export class Sponsor {
   @Column({ type: 'timestamptz', nullable: true })
   preferencesCompletedAt: Date | null;
 
-  @ManyToOne(() => Child, { nullable: true, eager: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Child, (child) => child.sponsors, { nullable: true, eager: true, onDelete: 'SET NULL' })
   child: Child;
 }

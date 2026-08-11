@@ -6,11 +6,12 @@ import { EmailLog } from '../entities/email-log.entity';
 import { TriggerRegistryService } from '../registry/trigger-registry.service';
 import { TemplateResolverService } from '../rendering/resolver.service';
 import { MailtrapProviderAdapter } from '../provider/mailtrap-provider.adapter';
+import { SHARED_EMAIL_ATTACHMENTS } from '../triggers/shared-layout';
 
 describe('MailProcessor', () => {
   let logRepo: { update: jest.Mock };
   let registry: { getByKey: jest.Mock };
-  let resolver: { resolve: jest.Mock };
+  let resolver: { resolve: jest.Mock; resolveByTemplateId: jest.Mock };
   let renderer: { render: jest.Mock };
   let provider: { send: jest.Mock };
   let processor: MailProcessor;
@@ -30,6 +31,7 @@ describe('MailProcessor', () => {
         key: jobData.triggerKey,
         dataSchema: [],
         staticAttachments: undefined,
+        defaults: { subject: 'Reset', bodyHtml: '<p>reset</p>' },
       }),
     };
     resolver = {
@@ -40,6 +42,7 @@ describe('MailProcessor', () => {
         bodyTemplate: '<p>reset</p>',
         layoutHtml: '{{{body}}}',
       }),
+      resolveByTemplateId: jest.fn(),
     };
     renderer = {
       render: jest.fn().mockReturnValue({
@@ -87,6 +90,40 @@ describe('MailProcessor', () => {
         providerMessageId: 'provider-msg-id',
       }),
     );
+  });
+
+  it('bypasses the DB-backed template resolver and renders the code default wrapped in the shared layout, attaching the shared logo', async () => {
+    await processor.process(makeJob());
+
+    expect(resolver.resolve).not.toHaveBeenCalled();
+    expect(resolver.resolveByTemplateId).not.toHaveBeenCalled();
+    expect(renderer.render).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subjectTemplate: 'Reset',
+        bodyTemplate: '<p>reset</p>',
+        layoutHtml: expect.stringContaining('{{{body}}}') as string,
+      }),
+    );
+    expect(provider.send).toHaveBeenCalledWith(
+      expect.objectContaining({ attachments: SHARED_EMAIL_ATTACHMENTS }),
+    );
+  });
+
+  it('still uses resolveByTemplateId for explicit template-id sends (admin test-send/broadcast)', async () => {
+    resolver.resolveByTemplateId.mockResolvedValue({
+      templateId: 't1',
+      versionId: 'v1',
+      subjectTemplate: 'Reset',
+      bodyTemplate: '<p>reset</p>',
+      layoutHtml: '{{{body}}}',
+    });
+
+    await processor.process(
+      makeJob({ data: { ...jobData, templateId: 'explicit-id' } }),
+    );
+
+    expect(resolver.resolveByTemplateId).toHaveBeenCalledWith('explicit-id');
+    expect(resolver.resolve).not.toHaveBeenCalled();
   });
 
   it('records the error and re-throws when delivery fails, without marking the log failed yet', async () => {

@@ -12,8 +12,10 @@ import {
 export class FollowUpSettings {
   @PrimaryGeneratedColumn('uuid') id: string;
 
-  @Column({ type: 'int', default: 3 })
-  delayDays: number;
+  // 4320 minutes = 3 days, the original default before minute-level
+  // configuration was added.
+  @Column({ type: 'int', default: 4320 })
+  delayMinutes: number;
 
   @Column({ type: 'uuid', nullable: true })
   updatedByUserId: string | null;

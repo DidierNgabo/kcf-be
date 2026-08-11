@@ -8,6 +8,8 @@ describe('ChildMediaService', () => {
     createUploadUrl: jest.fn().mockResolvedValue('https://signed.example/upload'),
     createDownloadUrl: jest.fn(),
     verifyObject: jest.fn(),
+    copyObject: jest.fn(),
+    getPublicUrl: jest.fn(),
   };
   const childRepo = { findOne: jest.fn().mockResolvedValue(child), save: jest.fn(), update: jest.fn() };
   const mediaRepo = { create: jest.fn((value) => value), save: jest.fn(), findOne: jest.fn() };

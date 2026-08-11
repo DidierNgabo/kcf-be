@@ -7,7 +7,7 @@ import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.in
 import { UserRole } from '../users/enums/user-role.enum';
 
 @Controller('follow-up-settings')
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.SPONSORSHIP_MANAGER)
 export class FollowUpSettingsController {
   constructor(private readonly followUpService: FollowUpService) {}
 

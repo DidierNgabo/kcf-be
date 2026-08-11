@@ -1,6 +1,7 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, Not, Repository } from 'typeorm';
+import * as path from 'path';
 import { CreateSponsorDto } from './dto/create-sponsor.dto';
 import { MatchSponsorDto } from './dto/match-sponsor.dto';
 import { UpdateSponsorDto } from './dto/update-sponsor.dto';
@@ -9,7 +10,14 @@ import { UpdateSponsorPreferencesDto } from './dto/update-sponsor-preferences.dt
 import { MailtrapContactsService } from './mailtrap-contacts.service';
 import { Sponsor } from './entities/sponsor.entity';
 import { ChildrenService } from '../children/children.service';
+import { Child } from '../children/entities/child.entity';
+import { ConsentType } from '../children/enums/child.enums';
+import { hasGrantedConsent } from '../children/consent.util';
 import { MailService } from '../mail/mail.service';
+import { STORAGE_SERVICE } from '../storage/storage.types';
+import type { StorageService } from '../storage/storage.types';
+
+const CONSENTED_PHOTO_PREFIX = 'email-assets/sponsor-photos/';
 
 @Injectable()
 export class SponsorService {
@@ -21,6 +29,7 @@ export class SponsorService {
     private readonly mailtrapContacts: MailtrapContactsService,
     private readonly childrenService: ChildrenService,
     private readonly mailService: MailService,
+    @Inject(STORAGE_SERVICE) private readonly storage: StorageService,
   ) {}
 
   async submit(dto: CreateSponsorDto): Promise<void> {
@@ -110,10 +119,13 @@ export class SponsorService {
         email: dto.sponsorEmail,
       });
     }
+    if (!child.sponsorshipStartDate) child.sponsorshipStartDate = new Date();
+    await this.childrenService.saveEntity(child);
     sponsor.child = child;
     await this.sponsorRepo.save(sponsor);
 
     const year = String(new Date().getFullYear());
+    const childPhotoUrl = await this.resolveConsentedChildPhotoUrl(child);
 
     void this.mailService.send({
       triggerKey: 'sponsor.matched',
@@ -129,9 +141,48 @@ export class SponsorService {
         childFamily: child.family ?? '',
         childLocation: child.location ?? '',
         childUniqueQuality: child.uniqueQuality ?? '',
+        // Always present (never omitted) so it overrides the trigger's
+        // sample default during mergeContext's deep-merge — an omitted key
+        // would silently fall back to the *sample* photo URL, not to "no
+        // photo". An empty string is falsy in the template's {{#if}}.
+        childPhotoUrl: childPhotoUrl ?? '',
         year,
       },
     });
+  }
+
+  // Only ever exposes a child's photo when a guardian has granted photo
+  // consent — the DB already tracks this per child (ConsentType.PHOTO) but
+  // nothing enforced it before this email existed. Copies the consented
+  // photo into the same public prefix the branded email assets already use
+  // (rather than building a public URL straight off the private
+  // children/{childId}/... key), so a declined/withdrawn consent can never
+  // retroactively make an already-private object key resolvable — only a
+  // deliberate, consent-gated copy is ever public. Falls back to null (the
+  // template's generic hero photo) on missing consent, missing photo, or
+  // any storage error — a photo-copy failure must never block the match
+  // email itself.
+  private async resolveConsentedChildPhotoUrl(
+    child: Child,
+  ): Promise<string | null> {
+    if (!hasGrantedConsent(child.consents, ConsentType.PHOTO)) return null;
+    const photo = child.media?.find(
+      (item) => item.id === child.profileMediaId && !item.archivedAt,
+    );
+    if (!photo) return null;
+
+    try {
+      const extension = path.extname(photo.objectKey) || '.jpg';
+      const destinationKey = `${CONSENTED_PHOTO_PREFIX}${child.id}${extension}`;
+      await this.storage.copyObject(photo.objectKey, destinationKey);
+      return this.storage.getPublicUrl(destinationKey);
+    } catch (err) {
+      this.logger.warn(
+        `Could not prepare consented photo for child ${child.id}; falling back to the generic hero photo`,
+        err instanceof Error ? err.stack : err,
+      );
+      return null;
+    }
   }
 
   async unsubscribeByToken(token: string): Promise<{ email: string }> {

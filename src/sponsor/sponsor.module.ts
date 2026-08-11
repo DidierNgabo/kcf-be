@@ -10,6 +10,7 @@ import { FollowUpSettings } from './entities/follow-up-settings.entity';
 import { ChildrenModule } from '../children/children.module';
 import { MailModule } from '../mail/mail.module';
 import { UsersModule } from '../users/users.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UsersModule } from '../users/users.module';
     ChildrenModule,
     MailModule,
     UsersModule,
+    StorageModule,
   ],
   controllers: [SponsorController, FollowUpSettingsController],
   providers: [SponsorService, MailtrapContactsService, FollowUpService],

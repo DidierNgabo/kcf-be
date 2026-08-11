@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean, IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional,
-  IsString, Matches, ValidateNested,
+  IsString, Matches, ValidateIf, ValidateNested,
 } from 'class-validator';
 import { ConsentStatus } from '../enums/child.enums';
 
@@ -16,7 +16,9 @@ export class GuardianInputDto {
   @IsString() @IsOptional() name?: string;
   @IsString() @IsNotEmpty() relationship: string;
   @IsString() @IsOptional() phone?: string;
-  @IsEmail() @IsOptional() email?: string;
+  @ValidateIf((_, value) => value !== undefined && value !== null && value !== '')
+  @IsEmail()
+  email?: string;
   @IsBoolean() @IsOptional() isPrimary?: boolean;
 }
 
@@ -27,7 +29,7 @@ export class ConsentInputDto {
 }
 
 export class CreateChildDto {
-  @IsString() @Matches(/^[A-Za-z0-9-]{3,40}$/) kcfNumber: string;
+  @IsString() @Matches(/^[A-Za-z0-9-]{3,40}$/) @IsOptional() kcfNumber?: string;
   @IsString() @IsNotEmpty() name: string;
   @IsString() @IsOptional() gender?: string;
   @IsDateString() @IsOptional() dateOfBirth?: string;

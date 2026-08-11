@@ -1,384 +1,77 @@
-<html lang='en'>
-  <head>
-    <meta charset='UTF-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-    <title>Thank You for Beginning This Journey – Kwizera Charity Foundation</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: #f0f0f0;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-      img {
-        border: 0;
-        display: block;
-      }
-      a {
-        color: inherit;
-      }
+<!-- Hero -->
+<div class="hero">
+  <img src="cid:kids-hero" alt="KCF children" width="600" />
+</div>
 
-      .wrapper {
-        max-width: 600px;
-        margin: 40px auto;
-        background: #ffffff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-      }
+<div class="section">
+  <h1 class="title">Thank You for Beginning This Journey</h1>
 
-      /* Header */
-      .header {
-        background-color: #e8b84b;
-        padding: 32px 40px;
-        text-align: center;
-      }
-      .header-icon {
-        font-size: 30px;
-        color: #2d3748;
-        line-height: 1;
-        margin-bottom: 10px;
-      }
-      .header h1 {
-        margin: 0 0 6px;
-        color: #2d3748;
-        font-size: 24px;
-        font-weight: bold;
-        letter-spacing: 0.3px;
-      }
-      .header p {
-        margin: 0;
-        color: #4a5568;
-        font-size: 13px;
-      }
+  <div class="letter">
+    <p>Dear <strong>{{name}}</strong>,</p>
+    <p>We are deeply grateful that you've chosen to register your interest in sponsoring a child through Kwizera. Your compassion and generosity are the first steps toward transforming a young life in Kigali.</p>
+    <p>Every child deserves hope, education, and the chance to dream. Today, you've made that possible for one special child who will soon become your little bestie.</p>
+  </div>
 
-      /* Hero */
-      .hero {
-        line-height: 0;
-      }
-      .hero img {
-        width: 100%;
-        max-height: 280px;
-        object-fit: cover;
-      }
+  <!-- Story card -->
+  <div class="story-card">
+    <h2>Our Story: Born from Hope During COVID-19</h2>
+    <p>Kwizera Charity Foundation was founded during the COVID-19 pandemic when our founder, Eric, witnessed firsthand how vulnerable children in Kigali were being left behind. Schools closed, families struggled, and dreams were fading.</p>
+    <p>But we believed in a different future. "Kwizera" means "hope" in Kinyarwanda, and that's exactly what we've been building—one child, one sponsor, one meaningful relationship at a time.</p>
+  </div>
 
-      /* Body */
-      .body {
-        padding: 40px 44px;
-        color: #4a5568;
-        font-size: 15px;
-        line-height: 1.8;
-      }
-      .body p {
-        margin: 0 0 16px;
-      }
-      .section-title {
-        font-size: 21px;
-        font-weight: bold;
-        color: #2d3748;
-        text-align: center;
-        margin: 0 0 24px;
-      }
-
-      /* Story card */
-      .story {
-        background: #fdf6ec;
-        border-radius: 8px;
-        padding: 24px 28px;
-        margin: 24px 0 28px;
-      }
-      .story h3 {
-        margin: 0 0 12px;
-        color: #2d3748;
-        font-size: 16px;
-        font-weight: bold;
-      }
-      .story p {
-        margin: 0 0 12px;
-        font-size: 14px;
-      }
-      .story p:last-child {
-        margin-bottom: 0;
-      }
-
-      /* Steps */
-      .steps-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #2d3748;
-        text-align: center;
-        margin: 0 0 20px;
-      }
-      .step-row {
-        margin-bottom: 18px;
-      }
-      .step-num {
-        width: 40px;
-        height: 40px;
-        background: #e8b84b;
-        border-radius: 50%;
-        text-align: center;
-        font-weight: bold;
-        font-size: 16px;
-        color: #2d3748;
-        line-height: 40px;
-        vertical-align: top;
-      }
-      .step-cell {
-        padding-left: 16px;
-        vertical-align: top;
-      }
-      .step-cell h4 {
-        margin: 4px 0 4px;
-        color: #2d3748;
-        font-size: 15px;
-        font-weight: bold;
-      }
-      .step-cell p {
-        margin: 0;
-        font-size: 14px;
-        color: #4a5568;
-        line-height: 1.6;
-      }
-
-      /* Quote */
-      .quote {
-        border-left: 4px solid #e8b84b;
-        padding: 12px 20px;
-        margin: 28px 0;
-      }
-      .quote p {
-        margin: 0 0 16px;
-        font-style: italic;
-        font-size: 15px;
-        color: #4a5568;
-        line-height: 1.7;
-      }
-      .avatar {
-        width: 40px;
-        height: 40px;
-        background: #e8b84b;
-        border-radius: 50%;
-        text-align: center;
-        font-weight: bold;
-        font-size: 16px;
-        color: #2d3748;
-        line-height: 40px;
-        vertical-align: middle;
-      }
-      .author-cell {
-        padding-left: 12px;
-        vertical-align: middle;
-      }
-      .author-name {
-        font-weight: bold;
-        color: #2d3748;
-        font-size: 14px;
-        margin: 0;
-      }
-      .author-role {
-        color: #718096;
-        font-size: 12px;
-        margin: 0;
-      }
-
-      /* CTA */
-      .cta {
-        text-align: center;
-        margin: 28px 0 24px;
-      }
-      .cta a {
-        background: #e8b84b;
-        color: #2d3748;
-        text-decoration: none;
-        padding: 15px 36px;
-        border-radius: 50px;
-        font-weight: bold;
-        font-size: 15px;
-        display: inline-block;
-      }
-
-      /* Signoff */
-      .signoff {
-        text-align: center;
-        color: #4a5568;
-        font-size: 15px;
-        padding-top: 8px;
-      }
-      .signoff p {
-        margin: 0 0 4px;
-      }
-
-      /* Footer */
-      .footer {
-        background: #fdf6ec;
-        padding: 32px 40px;
-        text-align: center;
-      }
-      .footer-title {
-        font-weight: bold;
-        color: #2d3748;
-        font-size: 15px;
-        margin: 0 0 16px;
-      }
-      .social-icons {
-        margin: 0 0 20px;
-      }
-      .social-icon {
-        display: inline-block;
-        width: 42px;
-        height: 42px;
-        border: 1px solid #e2d3b8;
-        border-radius: 50%;
-        margin: 0 4px;
-        line-height: 42px;
-        text-align: center;
-        color: #4a5568;
-        text-decoration: none;
-        font-size: 17px;
-        background: #ffffff;
-      }
-      .footer-info {
-        color: #718096;
-        font-size: 13px;
-        line-height: 1.9;
-        margin: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class='wrapper'>
-
-      <!-- Header -->
-      <div class='header'>
-        <div class='header-icon'>&#9829;</div>
-        <h1>Kwizera Charity Foundation</h1>
-        <p>Building brighter futures in Kigali, Rwanda</p>
+  <!-- Steps -->
+  <h2 class="section-title">What Happens Next</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>We Review Your Interest</h3>
+        <p>Our team carefully considers your preferences and commitment to find the perfect match.</p>
       </div>
-
-      <!-- Hero image -->
-      <div class='hero'>
-        <img
-          src='cid:kids-hero'
-          alt='KCF children'
-          width='600'
-        />
-      </div>
-
-      <!-- Body -->
-      <div class='body'>
-        <p class='section-title'>Thank You for Beginning This Journey</p>
-
-        <p>Dear <strong>{{name}}</strong>,</p>
-        <p>We are deeply grateful that you've chosen to register your interest
-          in sponsoring a child through Kwizera. Your compassion and generosity
-          are the first steps toward transforming a young life in Kigali.</p>
-        <p>Every child deserves hope, education, and the chance to dream. Today,
-          you've made that possible for one special child who will soon become
-          your little bestie.</p>
-
-        <!-- Story -->
-        <div class='story'>
-          <h3>Our Story: Born from Hope During COVID-19</h3>
-          <p>Kwizera Charity Foundation was founded during the COVID-19 pandemic
-            when our founder, Eric, witnessed firsthand how vulnerable children
-            in Kigali were being left behind. Schools closed, families
-            struggled, and dreams were fading.</p>
-          <p>But we believed in a different future. "Kwizera" means "hope" in
-            Kinyarwanda, and that's exactly what we've been building—one child,
-            one sponsor, one meaningful relationship at a time.</p>
-        </div>
-
-        <!-- Steps -->
-        <p class='steps-title'>What Happens Next</p>
-        <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-          <tr>
-            <td width='40' style='width:40px;padding:0;' valign='top'>
-              <div style='width:40px;height:40px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:16px;color:#2d3748;line-height:40px;'>1</div>
-            </td>
-            <td class='step-cell'>
-              <h4>We Review Your Interest</h4>
-              <p>Our team carefully considers your preferences and commitment to find the perfect match.</p>
-            </td>
-          </tr>
-          <tr><td colspan='2' height='18'></td></tr>
-          <tr>
-            <td width='40' style='width:40px;padding:0;' valign='top'>
-              <div style='width:40px;height:40px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:16px;color:#2d3748;line-height:40px;'>2</div>
-            </td>
-            <td class='step-cell'>
-              <h4>We Find Your Child Match</h4>
-              <p>We identify a child whose story, dreams, and needs align with your sponsorship journey.</p>
-            </td>
-          </tr>
-          <tr><td colspan='2' height='18'></td></tr>
-          <tr>
-            <td width='40' style='width:40px;padding:0;' valign='top'>
-              <div style='width:40px;height:40px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:16px;color:#2d3748;line-height:40px;'>3</div>
-            </td>
-            <td class='step-cell'>
-              <h4>We Prepare Your Sponsorship Pack</h4>
-              <p>You'll receive a comprehensive digital pack with all the details about your new little bestie.</p>
-            </td>
-          </tr>
-          <tr><td colspan='2' height='18'></td></tr>
-          <tr>
-            <td width='40' style='width:40px;padding:0;' valign='top'>
-              <div style='width:40px;height:40px;background:#e8b84b;border-radius:50%;text-align:center;font-weight:bold;font-size:16px;color:#2d3748;line-height:40px;'>4</div>
-            </td>
-            <td class='step-cell'>
-              <h4>You Meet Your Sponsored Child</h4>
-              <p>The most exciting moment—seeing their smile and learning about their dreams for the first time.</p>
-            </td>
-          </tr>
-        </table>
-
-        <!-- Quote -->
-        <div class='quote'>
-          <p>"Every child we support reminds me why we started this journey.
-            It's not about charity—it's about building genuine, life-changing
-            relationships that give our children the tools to build their own
-            futures."</p>
-          <table cellpadding='0' cellspacing='0' border='0'>
-            <tr>
-              <td class='avatar' width='40'>E</td>
-              <td class='author-cell'>
-                <p class='author-name'>Eric</p>
-                <p class='author-role'>Founder, Kwizera Charity Foundation</p>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- CTA -->
-        <div class='cta'>
-          <a href='https://kwizeracharityfoundation.org'>Learn More About Our
-            Mission</a>
-        </div>
-
-        <!-- Signoff -->
-        <div class='signoff'>
-          <p>With gratitude and hope,</p>
-          <p><strong>The Kwizera Team</strong></p>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class='footer'>
-        <p class='footer-title'>Stay Connected</p>
-        <div class='social-icons'>
-          <a href='https://kwizeracharityfoundation.org' class='social-icon' style='font-size:13px;font-weight:bold;font-family:Arial,sans-serif;'>W</a>
-          <a href='https://www.instagram.com/kwizeracharityfoundation' class='social-icon' style='font-size:11px;font-weight:bold;font-family:Arial,sans-serif;'>IG</a>
-          <a href='https://www.facebook.com/KwizeraCharityFoundation' class='social-icon' style='font-size:17px;font-family:Arial,sans-serif;'>f</a>
-          <a href='mailto:info@kwizeracharityfoundation.org' class='social-icon' style='font-size:15px;font-family:Arial,sans-serif;'>@</a>
-        </div>
-        <p class='footer-info'>
-          Kwizera Charity Foundation<br />
-          Kigali, Rwanda<br />
-          info@kwizeracharityfoundation.org
-        </p>
-      </div>
-
     </div>
-  </body>
-</html>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>We Find Your Child Match</h3>
+        <p>We identify a child whose story, dreams, and needs align with your sponsorship journey.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>We Prepare Your Sponsorship Pack</h3>
+        <p>You'll receive a comprehensive digital pack with all the details about your new little bestie.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>You Meet Your Sponsored Child</h3>
+        <p>The most exciting moment—seeing their smile and learning about their dreams for the first time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quote -->
+  <div class="quote">
+    <blockquote>"Every child we support reminds me why we started this journey. It's not about charity—it's about building genuine, life-changing relationships that give our children the tools to build their own futures."</blockquote>
+    <div class="quote-author">
+      <div class="avatar">E</div>
+      <div>
+        <div class="name">Eric</div>
+        <div class="role">Founder, Kwizera Charity Foundation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <a href="https://kwizeracharityfoundation.org" class="cta">Learn More About Our Mission</a>
+  </div>
+
+  <!-- Signoff -->
+  <p class="signoff">
+    With gratitude and hope,<br>
+    <span class="team">The Kwizera Team</span>
+  </p>
+</div>

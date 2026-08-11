@@ -1,111 +1,27 @@
-<html lang='en'>
-  <head>
-    <meta charset='UTF-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-    <title>Your KCF Sponsor Portal Account</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: #f0f0f0;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-      .wrapper {
-        max-width: 600px;
-        margin: 40px auto;
-        background: #ffffff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-      }
-      .header {
-        background-color: #e8b84b;
-        padding: 32px 40px;
-        text-align: center;
-      }
-      .header h1 {
-        margin: 0 0 6px;
-        color: #2d3748;
-        font-size: 24px;
-        font-weight: bold;
-      }
-      .header p {
-        margin: 0;
-        color: #4a5568;
-        font-size: 13px;
-      }
-      .body {
-        padding: 32px 44px 40px;
-        color: #4a5568;
-        font-size: 15px;
-        line-height: 1.8;
-      }
-      .body p {
-        margin: 0 0 16px;
-      }
-      .credentials {
-        background: #fdf6ec;
-        border-radius: 8px;
-        padding: 20px 24px;
-        margin: 0 0 20px;
-      }
-      .credentials p {
-        margin: 0 0 8px;
-        font-size: 14px;
-      }
-      .credentials strong {
-        color: #2d3748;
-      }
-      .cta {
-        text-align: center;
-        margin: 28px 0;
-      }
-      .cta a {
-        background: #e8b84b;
-        color: #2d3748;
-        text-decoration: none;
-        padding: 16px 40px;
-        border-radius: 50px;
-        font-weight: bold;
-        font-size: 15px;
-        display: inline-block;
-      }
-      .footer {
-        background: #fdf6ec;
-        padding: 24px 40px;
-        text-align: center;
-        color: #718096;
-        font-size: 13px;
-        line-height: 1.9;
-      }
-    </style>
-  </head>
-  <body>
-    <div class='wrapper'>
-      <div class='header'>
-        <h1>Kwizera Charity Foundation</h1>
-        <p>Your sponsor portal account is ready</p>
-      </div>
-      <div class='body'>
-        <p>Hi {{name}},</p>
-        <p>An account has been created for you so you can log in and view your
-          sponsorship and the child you support.</p>
-        <div class='credentials'>
-          <p><strong>Email:</strong> {{email}}</p>
-          <p><strong>Temporary password:</strong> {{temporaryPassword}}</p>
-        </div>
-        <p>Please keep these credentials safe. We recommend changing your
-          password after your first login.</p>
-        <div class='cta'>
-          <a href='{{loginUrl}}'>Log in to your account</a>
-        </div>
-        <p>Thank you for your generosity,<br /><strong>The Kwizera Team</strong></p>
-      </div>
-      <div class='footer'>
-        Kwizera Charity Foundation<br />
-        Kigali, Rwanda<br />
-        info@kwizeracharityfoundation.org
-      </div>
-    </div>
-  </body>
-</html>
+<div class="section">
+  <h1 class="title">Your Sponsor Portal Account is Ready</h1>
+
+  <div class="letter">
+    <p>Hi {{name}},</p>
+    <p>An account has been created for you so you can log in and view your sponsorship and the child you support.</p>
+  </div>
+
+  <div class="story-card">
+    <h2>Your Login Details</h2>
+    <p>Email: {{email}}</p>
+    <p>Temporary password: {{temporaryPassword}}</p>
+  </div>
+
+  <div class="letter">
+    <p>Please keep these credentials safe. We recommend changing your password after your first login.</p>
+  </div>
+
+  <div class="cta-wrap">
+    <a href="{{loginUrl}}" class="cta">Log in to Your Account</a>
+  </div>
+
+  <p class="signoff">
+    Thank you for your generosity,<br>
+    <span class="team">The Kwizera Team</span>
+  </p>
+</div>

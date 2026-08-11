@@ -7,6 +7,7 @@ import { ChildConsent } from './child-consent.entity';
 import { ChildEducation } from './child-education.entity';
 import { ChildGuardian } from './child-guardian.entity';
 import { ChildMedia } from './child-media.entity';
+import { Sponsor } from '../../sponsor/entities/sponsor.entity';
 
 @Entity('child')
 export class Child {
@@ -23,6 +24,7 @@ export class Child {
   @Column({ type: 'varchar', default: ChildStatus.ACTIVE }) status: ChildStatus;
   @Column({ type: 'timestamptz', nullable: true }) archivedAt: Date | null;
   @Column({ type: 'uuid', nullable: true }) profileMediaId: string | null;
+  @Column({ type: 'date', nullable: true }) sponsorshipStartDate: Date | null;
 
   // Public-profile fields retained while kcf-web migrates to the richer profile.
   @Column({ type: 'varchar', nullable: true }) imageUrl: string | null;
@@ -43,6 +45,9 @@ export class Child {
   consents: ChildConsent[];
   @OneToMany(() => ChildMedia, (media) => media.child)
   media: ChildMedia[];
+
+  @OneToMany(() => Sponsor, (sponsor) => sponsor.child)
+  sponsors: Sponsor[];
 
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
