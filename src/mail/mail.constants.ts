@@ -1,6 +1,6 @@
 export const DEFAULT_SENDER = {
   name: 'Kwizera Charity Foundation',
-  email: 'hello@vnbcoffee.com',
+  email: 'hello@kwizeracharityfoundation.org',
 };
 
 // Single source of truth for which locale values a template can be created
