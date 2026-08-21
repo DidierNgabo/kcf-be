@@ -78,23 +78,31 @@ export class FollowUpService {
 
     for (const sponsor of due) {
       try {
-        const credentials = await this.provisionPortalAccount(sponsor);
-        await this.mailService.send({
-          triggerKey: 'sponsor.profile-reminder',
-          to: sponsor.email,
-          data: {
-            name: sponsor.name,
-            year: String(new Date().getFullYear()),
-            ...credentials,
-          },
-        });
-        sponsor.followUpSentAt = new Date();
-        await this.sponsorRepo.save(sponsor);
-        this.logger.log(`Sent follow-up email to ${sponsor.email}`);
+        await this.sendFollowUpNow(sponsor);
       } catch (err) {
         this.logger.error(`Failed to send follow-up to ${sponsor.email}`, err);
       }
     }
+  }
+
+  // Shared by the cron loop above and the manual "resend" path (a
+  // sponsorship-manager retrying a failed/never-sent follow-up from the
+  // sponsor detail UI) so both go through identical provisioning + send +
+  // stamping logic rather than duplicating it.
+  async sendFollowUpNow(sponsor: Sponsor): Promise<void> {
+    const credentials = await this.provisionPortalAccount(sponsor);
+    await this.mailService.send({
+      triggerKey: 'sponsor.profile-reminder',
+      to: sponsor.email,
+      data: {
+        name: sponsor.name,
+        year: String(new Date().getFullYear()),
+        ...credentials,
+      },
+    });
+    sponsor.followUpSentAt = new Date();
+    await this.sponsorRepo.save(sponsor);
+    this.logger.log(`Sent follow-up email to ${sponsor.email}`);
   }
 
   // Provisions the sponsor's portal login at follow-up time so the reminder

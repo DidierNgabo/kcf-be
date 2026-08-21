@@ -60,7 +60,7 @@ const ALLOWED_ATTRIBUTES: SanitizeHtml.IOptions['allowedAttributes'] = {
   ],
   a: ['href', 'target', 'rel', 'aria-label'],
   img: ['src', 'alt', 'width', 'height'],
-  table: ['cellpadding', 'cellspacing', 'border'],
+  table: ['cellpadding', 'cellspacing', 'border', 'role'],
   td: ['colspan', 'rowspan', 'valign'],
   th: ['colspan', 'rowspan', 'valign'],
   meta: ['charset', 'name', 'content'],

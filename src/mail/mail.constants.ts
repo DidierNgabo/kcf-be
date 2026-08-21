@@ -1,8 +1,3 @@
-export const DEFAULT_SENDER = {
-  name: 'Kwizera Charity Foundation',
-  email: 'hello@kwizeracharityfoundation.org',
-};
-
 // Single source of truth for which locale values a template can be created
 // with. Currently just one — add another entry here (and the mirrored list
 // in kcf-mis) when real multi-language wording is needed.

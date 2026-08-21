@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SponsorController } from './sponsor.controller';
 import { FollowUpSettingsController } from './follow-up-settings.controller';
 import { SponsorService } from './sponsor.service';
-import { MailtrapContactsService } from './mailtrap-contacts.service';
 import { FollowUpService } from './follow-up.service';
 import { Sponsor } from './entities/sponsor.entity';
 import { FollowUpSettings } from './entities/follow-up-settings.entity';
@@ -21,6 +20,6 @@ import { StorageModule } from '../storage/storage.module';
     StorageModule,
   ],
   controllers: [SponsorController, FollowUpSettingsController],
-  providers: [SponsorService, MailtrapContactsService, FollowUpService],
+  providers: [SponsorService, FollowUpService],
 })
 export class SponsorModule {}

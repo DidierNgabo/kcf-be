@@ -92,4 +92,11 @@ export class MailService {
       throw err;
     }
   }
+
+  findByRecipient(email: string): Promise<EmailLog[]> {
+    return this.logRepo.find({
+      where: { recipientEmail: email },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }

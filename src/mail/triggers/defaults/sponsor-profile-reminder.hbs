@@ -1,70 +1,123 @@
 <!-- Hero -->
-<div class="hero">
-  <img src="cid:profile-hero" alt="KCF children" width="600" />
+<div class='hero'>
+  <img src='cid:profile-hero' alt='KCF children' width='600' />
 </div>
 
-<div class="section">
-  <h1 class="title">Let's Find Your Little Bestie</h1>
+<div class='section'>
+  <h1 class='title'>Let's Find Your Little Bestie</h1>
 
-  <div class="letter">
+  <div class='letter'>
     <p>Dear <strong>{{name}}</strong>,</p>
-    <p>Help us understand what matters most to you so we can create the perfect match. Every child is unique, and your preferences will help us find the child whose journey will resonate with your heart.</p>
+    <p>Help us understand what matters most to you so we can create the perfect
+      match. Every child is unique, and your preferences will help us find the
+      child whose journey will resonate with your heart.</p>
   </div>
 
   <!-- Preferences -->
-  <h2 class="section-title">Tell Us About Your Preferences</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <h3>Child Interests</h3>
-        <p>Do you have a preference for a child who loves sports, arts, science, or music? We'll match you with someone who shares your passions.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <h3>School Goals</h3>
-        <p>Would you like to support a child in primary school, secondary school, or pursuing specific educational dreams?</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <h3>Hobbies and Talents</h3>
-        <p>From storytelling to football, every child has unique gifts. Tell us what inspires you.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <h3>Communication Preferences</h3>
-        <p>How would you like to stay connected? Monthly letters, video messages, photos, or regular updates.</p>
-      </div>
-    </div>
+  <h2 class='section-title'>Tell Us About Your Preferences</h2>
+  <div class='steps'>
+    <table
+      role='presentation'
+      width='100%'
+      cellpadding='0'
+      cellspacing='0'
+      class='step'
+    >
+      <tr>
+        <td width='40' valign='top' style='padding-right:16px;'><div
+            class='step-num'
+          >1</div></td>
+        <td valign='top' class='step-body'>
+          <h3>Child Interests</h3>
+          <p>Do you have a preference for a child who loves sports, arts,
+            science, or music? We'll match you with someone who shares your
+            passions.</p>
+        </td>
+      </tr>
+    </table>
+    <table
+      role='presentation'
+      width='100%'
+      cellpadding='0'
+      cellspacing='0'
+      class='step'
+    >
+      <tr>
+        <td width='40' valign='top' style='padding-right:16px;'><div
+            class='step-num'
+          >2</div></td>
+        <td valign='top' class='step-body'>
+          <h3>School Goals</h3>
+          <p>Would you like to support a child in primary school, secondary
+            school, or pursuing specific educational dreams?</p>
+        </td>
+      </tr>
+    </table>
+    <table
+      role='presentation'
+      width='100%'
+      cellpadding='0'
+      cellspacing='0'
+      class='step'
+    >
+      <tr>
+        <td width='40' valign='top' style='padding-right:16px;'><div
+            class='step-num'
+          >3</div></td>
+        <td valign='top' class='step-body'>
+          <h3>Hobbies and Talents</h3>
+          <p>From storytelling to football, every child has unique gifts. Tell
+            us what inspires you.</p>
+        </td>
+      </tr>
+    </table>
+    <table
+      role='presentation'
+      width='100%'
+      cellpadding='0'
+      cellspacing='0'
+      class='step'
+    >
+      <tr>
+        <td width='40' valign='top' style='padding-right:16px;'><div
+            class='step-num'
+          >4</div></td>
+        <td valign='top' class='step-body'>
+          <h3>Communication Preferences</h3>
+          <p>How would you like to stay connected? Monthly letters, video
+            messages, photos, or regular updates.</p>
+        </td>
+      </tr>
+    </table>
   </div>
 
   {{#if temporaryPassword}}
-  <!-- Login details, first-time only -->
-  <div class="story-card">
-    <h2>Your Sponsor Portal Login</h2>
-    <p>Email: {{email}}</p>
-    <p>Temporary password: {{temporaryPassword}}</p>
-  </div>
+    <!-- Login details, first-time only -->
+    <div class='story-card'>
+      <h2>Your Sponsor Portal Login</h2>
+      <p>Email:
+        <a href='mailto:{{email}}' style='color:#fff; text-decoration:underline;'>{{email}}</a></p>
+      <p>Temporary password: {{temporaryPassword}}</p>
+    </div>
   {{/if}}
 
   <!-- CTA -->
-  <div class="cta-wrap">
-    <a href="{{loginUrl}}" class="cta">Complete Your Sponsorship Profile</a>
+  <div class='cta-wrap'>
+    <a href='{{loginUrl}}' class='cta'>Complete Your Sponsorship Profile</a>
   </div>
 
-  <div class="letter">
-    <p>Once we find your match, you'll receive a comprehensive digital sponsorship pack — a sponsorship guide, a welcome pack introducing your child, and a sponsorship agreement outlining our safeguarding measures. Your sponsored child's safety is our top priority: every interaction is monitored by our safeguarding team, with full financial transparency and certified child-protection policies.</p>
+  <div class='letter'>
+    <p>Once we find your match, you'll receive a comprehensive digital
+      sponsorship pack — a sponsorship guide, a welcome pack introducing your
+      child, and a sponsorship agreement outlining our safeguarding measures.
+      Your sponsored child's safety is our top priority: every interaction is
+      monitored by our safeguarding team, with full financial transparency and
+      certified child-protection policies.</p>
   </div>
 
   <!-- Signoff -->
-  <p class="signoff">
-    We're excited to help you find your perfect match,<br>
-    <span class="team">The Kwizera Team</span>
+  <p class='signoff'>
+    We're excited to help you find your perfect match,<br />
+    <span class='team'>The Kwizera Team</span>
   </p>
 </div>

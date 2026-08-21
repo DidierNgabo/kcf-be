@@ -100,13 +100,11 @@
 
   .steps { margin-top: 30px; }
   .step {
-    display: flex;
-    gap: 16px;
     margin-bottom: 24px;
   }
   .step:last-child { margin-bottom: 0; }
-  .step-num {
-    flex: 0 0 40px;
+  .step-num,
+  .avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -114,9 +112,8 @@
     color: #FFFFFF;
     font-weight: 700;
     font-size: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
+    line-height: 40px;
   }
   .step-body { padding-top: 2px; }
   .step-body h3 {
@@ -142,23 +139,7 @@
     line-height: 24px;
   }
   .quote-author {
-    display: flex;
-    align-items: center;
-    gap: 16px;
     margin-top: 22px;
-  }
-  .avatar {
-    flex: 0 0 40px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #3859A6;
-    color: #FFFFFF;
-    font-weight: 700;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
   .quote-author .name {
     font-style: italic;
@@ -216,21 +197,20 @@
     margin-bottom: 20px;
   }
   .socials {
-    display: flex;
-    justify-content: center;
-    gap: 18px;
+    text-align: center;
     margin-bottom: 26px;
   }
   .social {
+    display: inline-block;
     width: 44px;
     height: 44px;
     border-radius: 50%;
     background: #FFFFFF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
+    line-height: 44px;
+    margin: 0 9px;
   }
-  .social svg { width: 22px; height: 22px; }
+  .social img { vertical-align: middle; }
   .footer p {
     font-size: 14px;
     line-height: 28px;
@@ -268,16 +248,16 @@
       <h4>Stay Connected</h4>
       <div class="socials">
         <a href="https://kwizeracharityfoundation.org" class="social" aria-label="Website">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3859A6" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <img src="cid:icon-website" width="22" height="22" alt="Website">
         </a>
         <a href="https://www.instagram.com/kwizeracharityfoundation" class="social" aria-label="Instagram">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3859A6" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#3859A6" stroke="none"/></svg>
+          <img src="cid:icon-instagram" width="22" height="22" alt="Instagram">
         </a>
         <a href="https://www.facebook.com/KwizeraCharityFoundation" class="social" aria-label="Facebook">
-          <svg viewBox="0 0 24 24" fill="#3859A6"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          <img src="cid:icon-facebook" width="22" height="22" alt="Facebook">
         </a>
         <a href="mailto:info@kwizeracharityfoundation.org" class="social" aria-label="Email">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3859A6" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+          <img src="cid:icon-email" width="22" height="22" alt="Email">
         </a>
       </div>
       <p>Kwizera Charity Foundation</p>

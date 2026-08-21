@@ -1,7 +1,7 @@
 import { ILike, Repository } from 'typeorm';
 import { SponsorService } from './sponsor.service';
 import { Sponsor } from './entities/sponsor.entity';
-import { MailtrapContactsService } from './mailtrap-contacts.service';
+import { FollowUpService } from './follow-up.service';
 import { ChildrenService } from '../children/children.service';
 import { ConsentStatus, ConsentType } from '../children/enums/child.enums';
 import { MailService } from '../mail/mail.service';
@@ -37,8 +37,9 @@ describe('SponsorService', () => {
     create: jest.Mock;
   };
   let storage: { copyObject: jest.Mock; getPublicUrl: jest.Mock };
-  let childrenService: { findEntityById: jest.Mock };
-  let mailService: { send: jest.Mock };
+  let childrenService: { findEntityById: jest.Mock; saveEntity: jest.Mock };
+  let mailService: { send: jest.Mock; findByRecipient: jest.Mock };
+  let followUpService: { sendFollowUpNow: jest.Mock };
   let service: SponsorService;
 
   beforeEach(() => {
@@ -54,13 +55,17 @@ describe('SponsorService', () => {
         (objectKey: string) => `https://pub-example.r2.dev/${objectKey}`,
       ),
     };
-    childrenService = { findEntityById: jest.fn() };
-    mailService = { send: jest.fn() };
+    childrenService = {
+      findEntityById: jest.fn(),
+      saveEntity: jest.fn((c: unknown) => Promise.resolve(c)),
+    };
+    mailService = { send: jest.fn(), findByRecipient: jest.fn() };
+    followUpService = { sendFollowUpNow: jest.fn() };
     service = new SponsorService(
       sponsorRepo as unknown as Repository<Sponsor>,
-      {} as MailtrapContactsService,
       childrenService as unknown as ChildrenService,
       mailService as unknown as MailService,
+      followUpService as unknown as FollowUpService,
       storage as unknown as StorageService,
     );
   });
@@ -240,6 +245,112 @@ describe('SponsorService', () => {
           >,
         }),
       );
+    });
+  });
+
+  describe('listEmails', () => {
+    it("looks up the sponsor's email history by their recipient email", async () => {
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        email: 's@example.org',
+      });
+      mailService.findByRecipient.mockResolvedValue([
+        { id: 'log-1', triggerKey: 'sponsor.acknowledged' },
+      ]);
+
+      const result = await service.listEmails('s1');
+
+      expect(mailService.findByRecipient).toHaveBeenCalledWith(
+        's@example.org',
+      );
+      expect(result).toEqual([
+        { id: 'log-1', triggerKey: 'sponsor.acknowledged' },
+      ]);
+    });
+  });
+
+  describe('resendEmail', () => {
+    it('resends the acknowledgment email with the sponsor\'s current name', async () => {
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        name: 'Aline',
+        email: 's@example.org',
+        child: null,
+      });
+
+      await service.resendEmail('s1', 'sponsor.acknowledged');
+
+      expect(mailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          triggerKey: 'sponsor.acknowledged',
+          to: 's@example.org',
+          data: expect.objectContaining({ name: 'Aline' }) as Record<
+            string,
+            unknown
+          >,
+        }),
+      );
+    });
+
+    it('rebuilds and resends the matched email when the sponsor has a matched child', async () => {
+      const child = makeChild();
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        name: 'Aline',
+        email: 's@example.org',
+        child: { id: 'child-1' },
+      });
+      childrenService.findEntityById.mockResolvedValue(child);
+
+      await service.resendEmail('s1', 'sponsor.matched');
+
+      expect(childrenService.findEntityById).toHaveBeenCalledWith('child-1');
+      expect(mailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          triggerKey: 'sponsor.matched',
+          to: 's@example.org',
+          data: expect.objectContaining({ childName: 'Divine' }) as Record<
+            string,
+            unknown
+          >,
+        }),
+      );
+    });
+
+    it('refuses to resend the matched email when the sponsor has no matched child', async () => {
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        name: 'Aline',
+        email: 's@example.org',
+        child: null,
+      });
+
+      await expect(
+        service.resendEmail('s1', 'sponsor.matched'),
+      ).rejects.toThrow(/no matched child/);
+      expect(mailService.send).not.toHaveBeenCalled();
+    });
+
+    it('delegates the profile-reminder resend to FollowUpService', async () => {
+      const sponsor = { id: 's1', name: 'Aline', email: 's@example.org', child: null };
+      sponsorRepo.findOne.mockResolvedValue(sponsor);
+
+      await service.resendEmail('s1', 'sponsor.profile-reminder');
+
+      expect(followUpService.sendFollowUpNow).toHaveBeenCalledWith(sponsor);
+    });
+
+    it('rejects an unsupported trigger key', async () => {
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        name: 'Aline',
+        email: 's@example.org',
+        child: null,
+      });
+
+      await expect(
+        service.resendEmail('s1', 'user.password-reset'),
+      ).rejects.toThrow(/not supported/);
     });
   });
 

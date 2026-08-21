@@ -1,4 +1,11 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, Not, Repository } from 'typeorm';
 import * as path from 'path';
@@ -7,13 +14,14 @@ import { MatchSponsorDto } from './dto/match-sponsor.dto';
 import { UpdateSponsorDto } from './dto/update-sponsor.dto';
 import { QuerySponsorsDto } from './dto/query-sponsors.dto';
 import { UpdateSponsorPreferencesDto } from './dto/update-sponsor-preferences.dto';
-import { MailtrapContactsService } from './mailtrap-contacts.service';
 import { Sponsor } from './entities/sponsor.entity';
 import { ChildrenService } from '../children/children.service';
 import { Child } from '../children/entities/child.entity';
 import { ConsentType } from '../children/enums/child.enums';
 import { hasGrantedConsent } from '../children/consent.util';
 import { MailService } from '../mail/mail.service';
+import { EmailLog } from '../mail/entities/email-log.entity';
+import { FollowUpService } from './follow-up.service';
 import { STORAGE_SERVICE } from '../storage/storage.types';
 import type { StorageService } from '../storage/storage.types';
 
@@ -26,9 +34,9 @@ export class SponsorService {
   constructor(
     @InjectRepository(Sponsor)
     private readonly sponsorRepo: Repository<Sponsor>,
-    private readonly mailtrapContacts: MailtrapContactsService,
     private readonly childrenService: ChildrenService,
     private readonly mailService: MailService,
+    private readonly followUpService: FollowUpService,
     @Inject(STORAGE_SERVICE) private readonly storage: StorageService,
   ) {}
 
@@ -69,12 +77,6 @@ export class SponsorService {
       );
     } catch (err) {
       this.logger.error('Failed to save sponsor to database', err);
-    }
-
-    try {
-      await this.mailtrapContacts.upsertContact(dto);
-    } catch (err) {
-      this.logger.error('Failed to save contact to Mailtrap', err);
     }
   }
 
@@ -130,25 +132,95 @@ export class SponsorService {
     void this.mailService.send({
       triggerKey: 'sponsor.matched',
       to: dto.sponsorEmail,
-      data: {
-        sponsorName: dto.sponsorName,
-        childName: child.name,
-        childAge: String(child.age),
-        childSubject: child.subject ?? '',
-        childDream: child.dream ?? '',
-        childHobby: child.hobby ?? '',
-        childPersonality: child.personality ?? '',
-        childFamily: child.family ?? '',
-        childLocation: child.location ?? '',
-        childUniqueQuality: child.uniqueQuality ?? '',
-        // Always present (never omitted) so it overrides the trigger's
-        // sample default during mergeContext's deep-merge — an omitted key
-        // would silently fall back to the *sample* photo URL, not to "no
-        // photo". An empty string is falsy in the template's {{#if}}.
-        childPhotoUrl: childPhotoUrl ?? '',
+      data: this.buildMatchedEmailData(
+        dto.sponsorName,
+        child,
+        childPhotoUrl,
         year,
-      },
+      ),
     });
+  }
+
+  // Shared by match() and resendEmail()'s 'sponsor.matched' branch, so the
+  // field list only exists once.
+  private buildMatchedEmailData(
+    sponsorName: string,
+    child: Child,
+    childPhotoUrl: string | null,
+    year: string,
+  ): Record<string, unknown> {
+    return {
+      sponsorName,
+      childName: child.name,
+      childAge: String(child.age),
+      childSubject: child.subject ?? '',
+      childDream: child.dream ?? '',
+      childHobby: child.hobby ?? '',
+      childPersonality: child.personality ?? '',
+      childFamily: child.family ?? '',
+      childLocation: child.location ?? '',
+      childUniqueQuality: child.uniqueQuality ?? '',
+      // Always present (never omitted) so it overrides the trigger's
+      // sample default during mergeContext's deep-merge — an omitted key
+      // would silently fall back to the *sample* photo URL, not to "no
+      // photo". An empty string is falsy in the template's {{#if}}.
+      childPhotoUrl: childPhotoUrl ?? '',
+      year,
+    };
+  }
+
+  async listEmails(sponsorId: string): Promise<EmailLog[]> {
+    const sponsor = await this.findById(sponsorId);
+    return this.mailService.findByRecipient(sponsor.email);
+  }
+
+  async resendEmail(sponsorId: string, triggerKey: string): Promise<void> {
+    const sponsor = await this.findById(sponsorId);
+    const year = String(new Date().getFullYear());
+
+    switch (triggerKey) {
+      case 'sponsor.acknowledged':
+        await this.mailService.send({
+          triggerKey,
+          to: sponsor.email,
+          data: { name: sponsor.name, year },
+        });
+        return;
+
+      case 'sponsor.matched': {
+        if (!sponsor.child) {
+          throw new ConflictException(
+            'This sponsor has no matched child to resend a match email for',
+          );
+        }
+        // Re-fetch fully (consents/media aren't loaded by the eager
+        // Sponsor->Child relation) — same as match() does.
+        const child = await this.childrenService.findEntityById(
+          sponsor.child.id,
+        );
+        const childPhotoUrl = await this.resolveConsentedChildPhotoUrl(child);
+        await this.mailService.send({
+          triggerKey,
+          to: sponsor.email,
+          data: this.buildMatchedEmailData(
+            sponsor.name,
+            child,
+            childPhotoUrl,
+            year,
+          ),
+        });
+        return;
+      }
+
+      case 'sponsor.profile-reminder':
+        await this.followUpService.sendFollowUpNow(sponsor);
+        return;
+
+      default:
+        throw new BadRequestException(
+          `Resending trigger '${triggerKey}' is not supported`,
+        );
+    }
   }
 
   // Only ever exposes a child's photo when a guardian has granted photo

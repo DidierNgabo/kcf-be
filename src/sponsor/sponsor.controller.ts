@@ -78,6 +78,30 @@ export class SponsorController {
     return this.sponsorService.update(id, dto);
   }
 
+  @Roles(UserRole.ADMIN, UserRole.SPONSORSHIP_MANAGER)
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.sponsorService.findById(id);
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.SPONSORSHIP_MANAGER)
+  @Get(':id/emails')
+  listEmails(@Param('id') id: string) {
+    return this.sponsorService.listEmails(id);
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.SPONSORSHIP_MANAGER)
+  @Post(':id/emails/:triggerKey/resend')
+  @HttpCode(200)
+  resendEmail(
+    @Param('id') id: string,
+    @Param('triggerKey') triggerKey: string,
+  ) {
+    return this.sponsorService
+      .resendEmail(id, triggerKey)
+      .then(() => ({ success: true }));
+  }
+
   @Public()
   @Post('unsubscribe/:token')
   @HttpCode(200)
