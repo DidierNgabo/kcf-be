@@ -11,9 +11,9 @@ const bodyHtml = fs.readFileSync(
 @Injectable()
 @MailTrigger({
   key: 'sponsor.profile-reminder',
-  name: 'Sponsorship profile reminder',
+  name: 'Sponsorship profile invitation',
   description:
-    'Follow-up reminder sent to a sponsor who has not yet completed their sponsorship profile.',
+    'Sent immediately after a prospective sponsor registers interest so they can complete their profile.',
   dataSchema: [
     {
       name: 'name',

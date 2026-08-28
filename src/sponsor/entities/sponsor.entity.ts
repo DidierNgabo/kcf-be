@@ -30,6 +30,9 @@ export class Sponsor {
   @Column({ type: 'timestamptz', nullable: true })
   followUpSentAt: Date;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  acknowledgmentSentAt: Date | null;
+
   @Column({ default: false })
   unsubscribed: boolean;
 
@@ -51,9 +54,19 @@ export class Sponsor {
   @Column({ type: 'text', nullable: true })
   communicationPreferences: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  childGenderPreference: string | null;
+
+  @Column({ type: 'date', nullable: true })
+  birthday: string | null;
+
   @Column({ type: 'timestamptz', nullable: true })
   preferencesCompletedAt: Date | null;
 
-  @ManyToOne(() => Child, (child) => child.sponsors, { nullable: true, eager: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Child, (child) => child.sponsors, {
+    nullable: true,
+    eager: true,
+    onDelete: 'SET NULL',
+  })
   child: Child;
 }

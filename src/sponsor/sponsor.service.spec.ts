@@ -59,7 +59,10 @@ describe('SponsorService', () => {
       findEntityById: jest.fn(),
       saveEntity: jest.fn((c: unknown) => Promise.resolve(c)),
     };
-    mailService = { send: jest.fn(), findByRecipient: jest.fn() };
+    mailService = {
+      send: jest.fn().mockResolvedValue(undefined),
+      findByRecipient: jest.fn(),
+    };
     followUpService = { sendFollowUpNow: jest.fn() };
     service = new SponsorService(
       sponsorRepo as unknown as Repository<Sponsor>,
@@ -68,6 +71,45 @@ describe('SponsorService', () => {
       followUpService as unknown as FollowUpService,
       storage as unknown as StorageService,
     );
+  });
+
+  describe('submit', () => {
+    const submission = {
+      name: 'Aline',
+      email: 'aline@example.org',
+      phone: '+250700000000',
+      message: 'Interested',
+    };
+
+    it('persists a new sponsor before sending the profile invitation', async () => {
+      const saved = { id: 's1', ...submission, followUpSentAt: null };
+      sponsorRepo.findOne.mockResolvedValue(null);
+      sponsorRepo.save.mockResolvedValue(saved);
+
+      await service.submit(submission);
+
+      expect(sponsorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ email: submission.email }),
+      );
+      expect(followUpService.sendFollowUpNow).toHaveBeenCalledWith(saved);
+      expect(mailService.send).not.toHaveBeenCalledWith(
+        expect.objectContaining({ triggerKey: 'sponsor.acknowledged' }),
+      );
+    });
+
+    it('does not resend an already-queued profile invitation', async () => {
+      const existing = {
+        id: 's1',
+        ...submission,
+        followUpSentAt: new Date(),
+      };
+      sponsorRepo.findOne.mockResolvedValue(existing);
+      sponsorRepo.save.mockResolvedValue(existing);
+
+      await service.submit(submission);
+
+      expect(followUpService.sendFollowUpNow).not.toHaveBeenCalled();
+    });
   });
 
   describe('findAll', () => {
@@ -260,9 +302,7 @@ describe('SponsorService', () => {
 
       const result = await service.listEmails('s1');
 
-      expect(mailService.findByRecipient).toHaveBeenCalledWith(
-        's@example.org',
-      );
+      expect(mailService.findByRecipient).toHaveBeenCalledWith('s@example.org');
       expect(result).toEqual([
         { id: 'log-1', triggerKey: 'sponsor.acknowledged' },
       ]);
@@ -270,7 +310,7 @@ describe('SponsorService', () => {
   });
 
   describe('resendEmail', () => {
-    it('resends the acknowledgment email with the sponsor\'s current name', async () => {
+    it("resends the acknowledgment email with the sponsor's current name", async () => {
       sponsorRepo.findOne.mockResolvedValue({
         id: 's1',
         name: 'Aline',
@@ -332,7 +372,12 @@ describe('SponsorService', () => {
     });
 
     it('delegates the profile-reminder resend to FollowUpService', async () => {
-      const sponsor = { id: 's1', name: 'Aline', email: 's@example.org', child: null };
+      const sponsor = {
+        id: 's1',
+        name: 'Aline',
+        email: 's@example.org',
+        child: null,
+      };
       sponsorRepo.findOne.mockResolvedValue(sponsor);
 
       await service.resendEmail('s1', 'sponsor.profile-reminder');
@@ -355,19 +400,62 @@ describe('SponsorService', () => {
   });
 
   describe('updatePreferences', () => {
-    it('applies the fields and stamps preferencesCompletedAt', async () => {
+    it('saves birthday and queues acknowledgment on first completion', async () => {
       sponsorRepo.findOne.mockResolvedValue({
         id: 's1',
+        name: 'Aline',
+        email: 'aline@example.org',
         childInterests: null,
         preferencesCompletedAt: null,
+        acknowledgmentSentAt: null,
       });
 
       const result = await service.updatePreferences('s1', {
         childInterests: 'Sports and music',
+        birthday: '1990-04-12',
       });
 
       expect(result.childInterests).toBe('Sports and music');
+      expect(result.birthday).toBe('1990-04-12');
       expect(result.preferencesCompletedAt).toBeInstanceOf(Date);
+      expect(result.acknowledgmentSentAt).toBeInstanceOf(Date);
+      expect(mailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({ triggerKey: 'sponsor.acknowledged' }),
+      );
+    });
+
+    it('does not send another acknowledgment on later edits', async () => {
+      const completedAt = new Date();
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        name: 'Aline',
+        email: 'aline@example.org',
+        preferencesCompletedAt: completedAt,
+        acknowledgmentSentAt: new Date(),
+      });
+
+      await service.updatePreferences('s1', { childInterests: 'Music' });
+
+      expect(mailService.send).not.toHaveBeenCalled();
+    });
+
+    it('leaves acknowledgment unstamped when queueing fails so a later edit retries it', async () => {
+      const sponsor = {
+        id: 's1',
+        name: 'Aline',
+        email: 'aline@example.org',
+        preferencesCompletedAt: null,
+        acknowledgmentSentAt: null,
+      };
+      sponsorRepo.findOne.mockResolvedValue(sponsor);
+      mailService.send.mockRejectedValue(new Error('Redis unavailable'));
+
+      await expect(
+        service.updatePreferences('s1', { childInterests: 'Science' }),
+      ).rejects.toThrow('Redis unavailable');
+
+      expect(sponsor.preferencesCompletedAt).toBeInstanceOf(Date);
+      expect(sponsor.acknowledgmentSentAt).toBeNull();
     });
   });
 });

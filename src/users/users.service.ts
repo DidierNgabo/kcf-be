@@ -155,6 +155,22 @@ export class UsersService implements OnModuleInit {
     return { user: this.toSafeUser(saved), temporaryPassword, emailSent };
   }
 
+  async rotateUnsentSponsorInvitationPassword(
+    sponsorId: string,
+  ): Promise<string> {
+    const user = await this.usersRepo.findOne({ where: { sponsorId } });
+    if (!user) {
+      throw new NotFoundException(
+        `No login account exists for sponsor "${sponsorId}"`,
+      );
+    }
+    const temporaryPassword = this.generateTemporaryPassword();
+    user.password = await bcrypt.hash(temporaryPassword, SALT_ROUNDS);
+    user.passwordChangedAt = new Date();
+    await this.usersRepo.save(user);
+    return temporaryPassword;
+  }
+
   async requestPasswordReset(email: string): Promise<void> {
     const user = await this.usersRepo.findOne({ where: { email } });
     if (!user || !user.isActive) return;

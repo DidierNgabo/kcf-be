@@ -1,144 +1,109 @@
 import { ConflictException } from '@nestjs/common';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { FollowUpService } from './follow-up.service';
 import { Sponsor } from './entities/sponsor.entity';
-import { FollowUpSettings } from './entities/follow-up-settings.entity';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
 
 describe('FollowUpService', () => {
-  let sponsorRepo: { find: jest.Mock; save: jest.Mock };
-  let settingsRepo: { find: jest.Mock; save: jest.Mock; create: jest.Mock };
+  let sponsorRepo: { save: jest.Mock };
   let mailService: { send: jest.Mock };
-  let usersService: { createSponsorAccount: jest.Mock };
+  let usersService: {
+    createSponsorAccount: jest.Mock;
+    rotateUnsentSponsorInvitationPassword: jest.Mock;
+  };
   let service: FollowUpService;
 
-  const sponsor = {
-    id: 'sp1',
-    email: 'sponsor@example.org',
-    name: 'Aline',
-  } as Sponsor;
-
   beforeEach(() => {
-    sponsorRepo = {
-      find: jest.fn().mockResolvedValue([]),
-      save: jest.fn((s: unknown) => Promise.resolve(s)),
-    };
-    settingsRepo = {
-      find: jest
-        .fn()
-        .mockResolvedValue([{ id: 'set1', delayMinutes: 5 * 24 * 60 }]),
-      save: jest.fn((s: unknown) => Promise.resolve(s)),
-      create: jest.fn((s: unknown) => s),
-    };
+    sponsorRepo = { save: jest.fn((value) => Promise.resolve(value)) };
     mailService = { send: jest.fn().mockResolvedValue(undefined) };
-    usersService = { createSponsorAccount: jest.fn() };
-
+    usersService = {
+      createSponsorAccount: jest.fn(),
+      rotateUnsentSponsorInvitationPassword: jest.fn(),
+    };
     service = new FollowUpService(
       sponsorRepo as unknown as Repository<Sponsor>,
-      settingsRepo as unknown as Repository<FollowUpSettings>,
       mailService as unknown as MailService,
       usersService as unknown as UsersService,
     );
   });
 
-  describe('getSettings', () => {
-    it('returns the existing singleton row', async () => {
-      const settings = await service.getSettings();
-      expect(settings).toEqual({ id: 'set1', delayMinutes: 5 * 24 * 60 });
-      expect(settingsRepo.save).not.toHaveBeenCalled();
+  it('provisions and immediately queues a profile invitation', async () => {
+    const sponsor = {
+      id: 'sp1',
+      email: 'sponsor@example.org',
+      name: 'Aline',
+      followUpSentAt: null,
+    } as Sponsor;
+    usersService.createSponsorAccount.mockResolvedValue({
+      temporaryPassword: 'random-password',
     });
 
-    it('creates a default row when none exists yet', async () => {
-      settingsRepo.find.mockResolvedValue([]);
-      await service.getSettings();
-      expect(settingsRepo.create).toHaveBeenCalledWith({});
-      expect(settingsRepo.save).toHaveBeenCalled();
-    });
+    await service.sendFollowUpNow(sponsor);
+
+    expect(mailService.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        triggerKey: 'sponsor.profile-reminder',
+        data: expect.objectContaining({
+          temporaryPassword: 'random-password',
+          loginUrl: 'http://localhost:3000/login?next=/portal/preferences',
+        }) as Record<string, unknown>,
+      }),
+    );
+    expect(sponsor.followUpSentAt).toBeInstanceOf(Date);
   });
 
-  describe('processQueue', () => {
-    it('does nothing when no sponsors are due', async () => {
-      await service.processQueue();
-      expect(mailService.send).not.toHaveBeenCalled();
-    });
+  it('rotates credentials when retrying an invitation that was never queued', async () => {
+    const sponsor = {
+      id: 'sp1',
+      email: 'sponsor@example.org',
+      name: 'Aline',
+      followUpSentAt: null,
+    } as Sponsor;
+    usersService.createSponsorAccount.mockRejectedValue(
+      new ConflictException('account exists'),
+    );
+    usersService.rotateUnsentSponsorInvitationPassword.mockResolvedValue(
+      'fresh-password',
+    );
 
-    it('uses the configured delayMinutes (not a hardcoded value) to compute the cutoff', async () => {
-      const fixedNow = new Date('2026-01-15T12:00:00.000Z').getTime();
-      jest.spyOn(Date, 'now').mockReturnValue(fixedNow);
+    await service.sendFollowUpNow(sponsor);
 
-      await service.processQueue();
+    expect(
+      usersService.rotateUnsentSponsorInvitationPassword,
+    ).toHaveBeenCalledWith('sp1');
+    expect(mailService.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          temporaryPassword: 'fresh-password',
+        }) as Record<string, unknown>,
+      }),
+    );
+  });
 
-      const expectedCutoff = new Date(fixedNow - 5 * 24 * 60 * 60 * 1000);
-      expect(sponsorRepo.find).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            createdAt: LessThanOrEqual(expectedCutoff),
-          }) as Record<string, unknown>,
-        }),
-      );
+  it('does not reset credentials for a manual resend after the first invitation', async () => {
+    const sponsor = {
+      id: 'sp1',
+      email: 'sponsor@example.org',
+      name: 'Aline',
+      followUpSentAt: new Date(),
+    } as Sponsor;
+    usersService.createSponsorAccount.mockRejectedValue(
+      new ConflictException('account exists'),
+    );
 
-      jest.spyOn(Date, 'now').mockRestore();
-    });
+    await service.sendFollowUpNow(sponsor);
 
-    it('provisions a fresh account and includes the temporary password when the sponsor has none yet', async () => {
-      sponsorRepo.find.mockResolvedValue([sponsor]);
-      usersService.createSponsorAccount.mockResolvedValue({
-        temporaryPassword: 'Xk9-temp',
-      });
-
-      await service.processQueue();
-
-      expect(usersService.createSponsorAccount).toHaveBeenCalledWith({
-        sponsorId: sponsor.id,
-        skipEmail: true,
-      });
-      expect(mailService.send).toHaveBeenCalledWith(
-        expect.objectContaining({
-          triggerKey: 'sponsor.profile-reminder',
-          to: sponsor.email,
-          data: expect.objectContaining({
-            email: sponsor.email,
-            temporaryPassword: 'Xk9-temp',
-            loginUrl: expect.stringContaining(
-              '/login?next=/portal/preferences',
-            ) as string,
-          }) as Record<string, unknown>,
-        }),
-      );
-      expect(sponsorRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ followUpSentAt: expect.any(Date) as Date }),
-      );
-    });
-
-    it('sends an empty (not fake-example) temporaryPassword when the sponsor already has an account', async () => {
-      sponsorRepo.find.mockResolvedValue([sponsor]);
-      usersService.createSponsorAccount.mockRejectedValue(
-        new ConflictException('This sponsor already has a login account'),
-      );
-
-      await service.processQueue();
-
-      expect(mailService.send).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ temporaryPassword: '' }) as Record<
-            string,
-            unknown
-          >,
-        }),
-      );
-    });
-
-    it('does not send or save when an unexpected error occurs provisioning the account', async () => {
-      sponsorRepo.find.mockResolvedValue([sponsor]);
-      usersService.createSponsorAccount.mockRejectedValue(
-        new Error('DB connection lost'),
-      );
-
-      await service.processQueue();
-
-      expect(mailService.send).not.toHaveBeenCalled();
-      expect(sponsorRepo.save).not.toHaveBeenCalled();
-    });
+    expect(
+      usersService.rotateUnsentSponsorInvitationPassword,
+    ).not.toHaveBeenCalled();
+    expect(mailService.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ temporaryPassword: '' }) as Record<
+          string,
+          unknown
+        >,
+      }),
+    );
   });
 });

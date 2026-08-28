@@ -7,7 +7,6 @@ import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { User } from '../src/users/entities/user.entity';
 import { Sponsor } from '../src/sponsor/entities/sponsor.entity';
-import { FollowUpSettings } from '../src/sponsor/entities/follow-up-settings.entity';
 import { UserRole } from '../src/users/enums/user-role.enum';
 
 interface LoginResponseBody {
@@ -21,11 +20,10 @@ function sleepPastSecondBoundary(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 1100));
 }
 
-describe('Sponsorship matching, follow-up settings & preferences (e2e)', () => {
+describe('Sponsorship matching and preferences (e2e)', () => {
   let app: INestApplication<App>;
   let usersRepo: Repository<User>;
   let sponsorsRepo: Repository<Sponsor>;
-  let settingsRepo: Repository<FollowUpSettings>;
 
   let adminToken: string;
   let staffToken: string;
@@ -36,11 +34,6 @@ describe('Sponsorship matching, follow-up settings & preferences (e2e)', () => {
   const suffix = Date.now();
   const createdUserEmails: string[] = [];
   const createdSponsorEmails: string[] = [];
-
-  // follow_up_settings is a real, shared singleton row — captured and
-  // restored so this suite doesn't leave the real follow-up delay changed.
-  let settingsRowId: string;
-  let originalDelayMinutes: number;
 
   async function createRoleUserAndLogin(
     role: UserRole,
@@ -76,12 +69,6 @@ describe('Sponsorship matching, follow-up settings & preferences (e2e)', () => {
 
     usersRepo = moduleFixture.get(getRepositoryToken(User));
     sponsorsRepo = moduleFixture.get(getRepositoryToken(Sponsor));
-    settingsRepo = moduleFixture.get(getRepositoryToken(FollowUpSettings));
-
-    const existingSettings = await settingsRepo.find({ take: 1 });
-    settingsRowId = existingSettings[0]?.id;
-    originalDelayMinutes = existingSettings[0]?.delayMinutes ?? 4320;
-
     const adminEmail = process.env.ADMIN_BOOTSTRAP_EMAIL;
     const adminPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD;
     if (!adminEmail || !adminPassword) {
@@ -128,12 +115,6 @@ describe('Sponsorship matching, follow-up settings & preferences (e2e)', () => {
   }, 30000);
 
   afterAll(async () => {
-    if (settingsRowId) {
-      await settingsRepo.update(
-        { id: settingsRowId },
-        { delayMinutes: originalDelayMinutes },
-      );
-    }
     for (const email of createdUserEmails) {
       await usersRepo.delete({ email });
     }
@@ -162,62 +143,6 @@ describe('Sponsorship matching, follow-up settings & preferences (e2e)', () => {
         .get('/sponsor')
         .set('Authorization', `Bearer ${sponsorToken}`)
         .expect(403);
-    });
-  });
-
-  describe('follow-up settings', () => {
-    it('forbids staff and sponsor roles from reading or updating', async () => {
-      await request(app.getHttpServer())
-        .get('/follow-up-settings')
-        .set('Authorization', `Bearer ${staffToken}`)
-        .expect(403);
-      await request(app.getHttpServer())
-        .patch('/follow-up-settings')
-        .set('Authorization', `Bearer ${staffToken}`)
-        .send({ delayMinutes: 7 })
-        .expect(403);
-      await request(app.getHttpServer())
-        .get('/follow-up-settings')
-        .set('Authorization', `Bearer ${sponsorToken}`)
-        .expect(403);
-    });
-
-    it('lets an admin read and update the delay', async () => {
-      const updated = await request(app.getHttpServer())
-        .patch('/follow-up-settings')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ delayMinutes: 10 })
-        .expect(200);
-      expect((updated.body as { delayMinutes: number }).delayMinutes).toBe(10);
-
-      const read = await request(app.getHttpServer())
-        .get('/follow-up-settings')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
-      expect((read.body as { delayMinutes: number }).delayMinutes).toBe(10);
-    });
-
-    it('lets a sponsorship manager read and update the delay', async () => {
-      const updated = await request(app.getHttpServer())
-        .patch('/follow-up-settings')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send({ delayMinutes: 15 })
-        .expect(200);
-      expect((updated.body as { delayMinutes: number }).delayMinutes).toBe(15);
-
-      const read = await request(app.getHttpServer())
-        .get('/follow-up-settings')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .expect(200);
-      expect((read.body as { delayMinutes: number }).delayMinutes).toBe(15);
-    });
-
-    it('rejects an out-of-range delay', async () => {
-      await request(app.getHttpServer())
-        .patch('/follow-up-settings')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ delayMinutes: 999999 })
-        .expect(400);
     });
   });
 

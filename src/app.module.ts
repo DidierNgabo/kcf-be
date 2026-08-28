@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,7 +7,6 @@ import { SponsorModule } from './sponsor/sponsor.module';
 import { ChildrenModule } from './children/children.module';
 import { Child } from './children/entities/child.entity';
 import { Sponsor } from './sponsor/entities/sponsor.entity';
-import { FollowUpSettings } from './sponsor/entities/follow-up-settings.entity';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -33,7 +31,6 @@ import { AttendanceModule } from './attendance/attendance.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
@@ -44,7 +41,6 @@ import { AttendanceModule } from './attendance/attendance.module';
       database: process.env.DATABASE_NAME,
       entities: [
         Sponsor,
-        FollowUpSettings,
         Child,
         User,
         ChildEducation,

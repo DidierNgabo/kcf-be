@@ -41,7 +41,6 @@ export class SponsorService {
   ) {}
 
   async submit(dto: CreateSponsorDto): Promise<void> {
-    console.log('Received sponsorship submission:', dto);
     const { name, email, phone, message } = dto;
     const now = new Date();
     const date = now.toLocaleDateString('en-US', {
@@ -51,11 +50,20 @@ export class SponsorService {
     });
     const year = String(now.getFullYear());
 
-    void this.mailService.send({
-      triggerKey: 'sponsor.acknowledged',
-      to: email,
-      data: { name, year },
+    let sponsor = await this.sponsorRepo.findOne({
+      where: { email },
+      loadEagerRelations: false,
     });
+    if (sponsor) {
+      Object.assign(sponsor, { name, phone, message });
+    } else {
+      sponsor = this.sponsorRepo.create({ name, email, phone, message });
+    }
+    sponsor = await this.sponsorRepo.save(sponsor);
+
+    if (!sponsor.followUpSentAt) {
+      await this.followUpService.sendFollowUpNow(sponsor);
+    }
 
     void this.mailService.send({
       triggerKey: 'sponsor.inquiry-received',
@@ -69,15 +77,6 @@ export class SponsorService {
         year,
       },
     });
-
-    try {
-      await this.sponsorRepo.upsert(
-        { email, name, phone: phone, message: message },
-        ['email'],
-      );
-    } catch (err) {
-      this.logger.error('Failed to save sponsor to database', err);
-    }
   }
 
   findAll(query?: QuerySponsorsDto): Promise<Sponsor[]> {
@@ -289,8 +288,19 @@ export class SponsorService {
   ): Promise<Sponsor> {
     const sponsor = await this.findById(sponsorId);
     Object.assign(sponsor, dto);
-    sponsor.preferencesCompletedAt = new Date();
-    return this.sponsorRepo.save(sponsor);
+    sponsor.preferencesCompletedAt ??= new Date();
+    let saved = await this.sponsorRepo.save(sponsor);
+
+    if (!saved.acknowledgmentSentAt) {
+      await this.mailService.send({
+        triggerKey: 'sponsor.acknowledged',
+        to: saved.email,
+        data: { name: saved.name, year: String(new Date().getFullYear()) },
+      });
+      saved.acknowledgmentSentAt = new Date();
+      saved = await this.sponsorRepo.save(saved);
+    }
+    return saved;
   }
 
   async audienceCounts(): Promise<{

@@ -13,7 +13,7 @@ const bodyHtml = fs.readFileSync(
   key: 'sponsor.acknowledged',
   name: 'Sponsorship acknowledgment',
   description:
-    'Sent to a prospective sponsor immediately after they submit the sponsorship interest form.',
+    'Sent once after a prospective sponsor first completes their sponsorship profile.',
   dataSchema: [
     {
       name: 'name',

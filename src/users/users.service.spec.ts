@@ -142,6 +142,22 @@ describe('UsersService', () => {
     });
   });
 
+  describe('rotateUnsentSponsorInvitationPassword', () => {
+    it('replaces the stored hash with a fresh random temporary password', async () => {
+      const user = { id: 'u1', sponsorId: 'sponsor-1', password: 'old-hash' };
+      usersRepo.findOne.mockResolvedValue(user);
+
+      const temporaryPassword =
+        await service.rotateUnsentSponsorInvitationPassword('sponsor-1');
+
+      expect(temporaryPassword).toBeTruthy();
+      expect(bcrypt.hash).toHaveBeenCalledWith(temporaryPassword, 10);
+      expect(usersRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ password: 'hashed-password' }),
+      );
+    });
+  });
+
   describe('requestPasswordReset', () => {
     it('no-ops for an unknown email', async () => {
       usersRepo.findOne.mockResolvedValue(null);

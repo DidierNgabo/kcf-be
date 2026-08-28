@@ -8,7 +8,6 @@ import { ChildImportRow } from '../children/entities/child-import-row.entity';
 import { ChildImport } from '../children/entities/child-import.entity';
 import { ChildMedia } from '../children/entities/child-media.entity';
 import { Sponsor } from '../sponsor/entities/sponsor.entity';
-import { FollowUpSettings } from '../sponsor/entities/follow-up-settings.entity';
 import { User } from '../users/entities/user.entity';
 import { AuditLog } from '../audit/audit-log.entity';
 import { EmailLayout } from '../mail/entities/email-layout.entity';
@@ -30,7 +29,6 @@ export default new DataSource({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
   entities: [
     Sponsor,
-    FollowUpSettings,
     Child,
     User,
     ChildEducation,
