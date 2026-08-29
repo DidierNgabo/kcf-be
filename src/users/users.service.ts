@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { User } from './entities/user.entity';
@@ -212,7 +212,11 @@ export class UsersService implements OnModuleInit {
 
   findByEmailWithPassword(email: string): Promise<User | null> {
     return this.usersRepo.findOne({
-      where: { email },
+      where: {
+        email: Raw((column) => `LOWER(${column}) = :email`, {
+          email: email.toLowerCase(),
+        }),
+      },
       select: [
         'id',
         'email',

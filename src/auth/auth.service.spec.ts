@@ -65,6 +65,20 @@ describe('AuthService', () => {
     });
   });
 
+  it('normalizes mixed-case email addresses before lookup', async () => {
+    usersService.findByEmailWithPassword.mockResolvedValue(activeUser);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+    await service.login({
+      email: 'ADMIN@KCF.ORG',
+      password: 'correct-password',
+    });
+
+    expect(usersService.findByEmailWithPassword).toHaveBeenCalledWith(
+      'admin@kcf.org',
+    );
+  });
+
   it('rejects an unknown email', async () => {
     usersService.findByEmailWithPassword.mockResolvedValue(null);
 
