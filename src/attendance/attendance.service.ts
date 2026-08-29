@@ -242,9 +242,7 @@ export class AttendanceService {
     return this.dayRepo.save(day);
   }
 
-  async listDays(
-    query: QueryAttendanceDaysDto,
-  ): Promise<{ date: string; label: string | null; presentCount: number }[]> {
+  async listDays(query: QueryAttendanceDaysDto) {
     const where =
       query.from && query.to
         ? {
@@ -258,12 +256,23 @@ export class AttendanceService {
           : query.to
             ? { date: LessThanOrEqual(query.to as unknown as Date) }
             : {};
-    const days = await this.dayRepo.find({
+    const [days, total] = await this.dayRepo.findAndCount({
       where,
       order: { date: 'DESC' },
+      skip: (query.page - 1) * query.limit,
       take: query.limit,
     });
-    if (days.length === 0) return [];
+    if (days.length === 0) {
+      return {
+        data: [],
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          total,
+          totalPages: Math.ceil(total / query.limit),
+        },
+      };
+    }
 
     // Counts only present/late records — attendance_record rows can now
     // also represent an explicit Absent or Excused marking, which must not
@@ -280,11 +289,19 @@ export class AttendanceService {
       .getRawMany<{ dayId: string; count: string }>();
     const countByDay = new Map(counts.map((c) => [c.dayId, Number(c.count)]));
 
-    return days.map((day) => ({
-      date: toDateString(day.date),
-      label: day.label,
-      presentCount: countByDay.get(day.id) ?? 0,
-    }));
+    return {
+      data: days.map((day) => ({
+        date: toDateString(day.date),
+        label: day.label,
+        presentCount: countByDay.get(day.id) ?? 0,
+      })),
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.ceil(total / query.limit),
+      },
+    };
   }
 
   async getChildHistory(childId: string): Promise<{

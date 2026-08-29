@@ -1,4 +1,4 @@
-import { ILike, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { SponsorService } from './sponsor.service';
 import { Sponsor } from './entities/sponsor.entity';
 import { FollowUpService } from './follow-up.service';
@@ -35,19 +35,46 @@ describe('SponsorService', () => {
     findOne: jest.Mock;
     save: jest.Mock;
     create: jest.Mock;
+    count: jest.Mock;
+    createQueryBuilder: jest.Mock;
   };
   let storage: { copyObject: jest.Mock; getPublicUrl: jest.Mock };
-  let childrenService: { findEntityById: jest.Mock; saveEntity: jest.Mock };
+  let childrenService: {
+    findEntityById: jest.Mock;
+    saveEntity: jest.Mock;
+    countUnsponsoredBeneficiaries: jest.Mock;
+  };
   let mailService: { send: jest.Mock; findByRecipient: jest.Mock };
   let followUpService: { sendFollowUpNow: jest.Mock };
   let service: SponsorService;
+  let sponsorQueryBuilder: {
+    leftJoinAndSelect: jest.Mock;
+    andWhere: jest.Mock;
+    orderBy: jest.Mock;
+    skip: jest.Mock;
+    take: jest.Mock;
+    getManyAndCount: jest.Mock;
+  };
 
   beforeEach(() => {
+    sponsorQueryBuilder = {
+      leftJoinAndSelect: jest.fn(),
+      andWhere: jest.fn(),
+      orderBy: jest.fn(),
+      skip: jest.fn(),
+      take: jest.fn(),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+    };
+    Object.values(sponsorQueryBuilder)
+      .filter((value) => value !== sponsorQueryBuilder.getManyAndCount)
+      .forEach((mock) => mock.mockReturnValue(sponsorQueryBuilder));
     sponsorRepo = {
       find: jest.fn().mockResolvedValue([]),
       findOne: jest.fn(),
       save: jest.fn((s: unknown) => Promise.resolve(s)),
       create: jest.fn((value: object) => value),
+      count: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(sponsorQueryBuilder),
     };
     storage = {
       copyObject: jest.fn().mockResolvedValue(undefined),
@@ -58,6 +85,7 @@ describe('SponsorService', () => {
     childrenService = {
       findEntityById: jest.fn(),
       saveEntity: jest.fn((c: unknown) => Promise.resolve(c)),
+      countUnsponsoredBeneficiaries: jest.fn(),
     };
     mailService = {
       send: jest.fn().mockResolvedValue(undefined),
@@ -112,29 +140,71 @@ describe('SponsorService', () => {
     });
   });
 
+  describe('statistics', () => {
+    it('returns complete database-backed sponsorship totals', async () => {
+      sponsorRepo.count
+        .mockResolvedValueOnce(8)
+        .mockResolvedValueOnce(5)
+        .mockResolvedValueOnce(4)
+        .mockResolvedValueOnce(4)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(1)
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(1)
+        .mockResolvedValueOnce(0);
+      childrenService.countUnsponsoredBeneficiaries.mockResolvedValue(17);
+
+      const result = await service.statistics();
+      expect(result).toEqual({
+        activeSponsors: 8,
+        completedProfiles: 5,
+        activeMatches: 4,
+        unmatchedSponsors: 4,
+        unsponsoredBeneficiaries: 17,
+        pendingEnquiries: 2,
+        sponsorshipStarts: result.sponsorshipStarts,
+      });
+      expect(result.sponsorshipStarts.map((item) => item.starts)).toEqual([
+        0, 1, 0, 2, 1, 0,
+      ]);
+      expect(sponsorRepo.count).toHaveBeenCalledTimes(11);
+      expect(
+        childrenService.countUnsponsoredBeneficiaries,
+      ).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('findAll', () => {
-    it('returns the full unfiltered list (unchanged) when no search term is given', async () => {
-      await service.findAll();
-      expect(sponsorRepo.find).toHaveBeenCalledWith({
-        order: { createdAt: 'DESC' },
-      });
-    });
+    it('paginates and filters sponsors in the database', async () => {
+      sponsorQueryBuilder.getManyAndCount.mockResolvedValue([
+        [{ id: 's1' }],
+        41,
+      ]);
 
-    it('returns the full unfiltered list when called with no query at all', async () => {
-      await service.findAll(undefined);
-      expect(sponsorRepo.find).toHaveBeenCalledWith({
-        order: { createdAt: 'DESC' },
+      const result = await service.findAll({
+        search: 'aline',
+        match: 'matched',
+        page: 2,
+        limit: 20,
       });
-    });
 
-    it('searches by name/email and applies the limit when a search term is given', async () => {
-      await service.findAll({ search: 'aline', limit: 6 });
-      expect(sponsorRepo.find).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: [{ name: ILike('%aline%') }, { email: ILike('%aline%') }],
-          take: 6,
-        }),
+      expect(sponsorQueryBuilder.andWhere).toHaveBeenCalledWith(
+        '(sponsor.name ILIKE :search OR sponsor.email ILIKE :search)',
+        { search: '%aline%' },
       );
+      expect(sponsorQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'sponsor.childId IS NOT NULL',
+      );
+      expect(sponsorQueryBuilder.skip).toHaveBeenCalledWith(20);
+      expect(sponsorQueryBuilder.take).toHaveBeenCalledWith(20);
+      expect(result.pagination).toEqual({
+        page: 2,
+        limit: 20,
+        total: 41,
+        totalPages: 3,
+      });
     });
   });
 
@@ -412,6 +482,9 @@ describe('SponsorService', () => {
 
       const result = await service.updatePreferences('s1', {
         childInterests: 'Sports and music',
+        schoolGoals: 'Primary school',
+        childGenderPreference: 'No preference',
+        communicationPreferences: 'Letters',
         birthday: '1990-04-12',
       });
 
@@ -422,6 +495,47 @@ describe('SponsorService', () => {
       expect(mailService.send).toHaveBeenCalledWith(
         expect.objectContaining({ triggerKey: 'sponsor.acknowledged' }),
       );
+    });
+
+    it('rejects first completion until every preference section has an explicit answer', async () => {
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        name: 'Aline',
+        email: 'aline@example.org',
+        preferencesCompletedAt: null,
+        acknowledgmentSentAt: null,
+        birthdaySkipped: false,
+      });
+
+      await expect(
+        service.updatePreferences('s1', { childInterests: 'Sports' }),
+      ).rejects.toThrow('Complete every preference section');
+
+      expect(sponsorRepo.save).not.toHaveBeenCalled();
+      expect(mailService.send).not.toHaveBeenCalled();
+    });
+
+    it('accepts an explicit birthday skip as a completed birthday section', async () => {
+      sponsorRepo.findOne.mockResolvedValue({
+        id: 's1',
+        name: 'Aline',
+        email: 'aline@example.org',
+        preferencesCompletedAt: null,
+        acknowledgmentSentAt: null,
+        birthday: null,
+        birthdaySkipped: false,
+      });
+
+      const result = await service.updatePreferences('s1', {
+        childInterests: 'No preference',
+        schoolGoals: 'No preference',
+        childGenderPreference: 'No preference',
+        communicationPreferences: 'Letters',
+        birthdaySkipped: true,
+      });
+
+      expect(result.birthdaySkipped).toBe(true);
+      expect(result.preferencesCompletedAt).toBeInstanceOf(Date);
     });
 
     it('does not send another acknowledgment on later edits', async () => {
@@ -451,7 +565,13 @@ describe('SponsorService', () => {
       mailService.send.mockRejectedValue(new Error('Redis unavailable'));
 
       await expect(
-        service.updatePreferences('s1', { childInterests: 'Science' }),
+        service.updatePreferences('s1', {
+          childInterests: 'Science',
+          schoolGoals: 'Secondary school',
+          childGenderPreference: 'Girl',
+          communicationPreferences: 'Photo updates',
+          birthdaySkipped: true,
+        }),
       ).rejects.toThrow('Redis unavailable');
 
       expect(sponsor.preferencesCompletedAt).toBeInstanceOf(Date);

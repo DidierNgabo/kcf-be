@@ -37,6 +37,12 @@ export class SponsorController {
     return this.sponsorService.audienceCounts();
   }
 
+  @Roles(UserRole.ADMIN, UserRole.SPONSORSHIP_MANAGER)
+  @Get('statistics')
+  statistics() {
+    return this.sponsorService.statistics();
+  }
+
   @Roles(UserRole.SPONSOR)
   @Get('me')
   findMine(@CurrentUser() user: AuthenticatedUser) {

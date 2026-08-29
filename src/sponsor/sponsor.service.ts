@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, IsNull, Not, Repository } from 'typeorm';
+import { Between, IsNull, Not, Repository } from 'typeorm';
 import * as path from 'path';
 import { CreateSponsorDto } from './dto/create-sponsor.dto';
 import { MatchSponsorDto } from './dto/match-sponsor.dto';
@@ -79,18 +79,48 @@ export class SponsorService {
     });
   }
 
-  findAll(query?: QuerySponsorsDto): Promise<Sponsor[]> {
-    if (!query?.search) {
-      return this.sponsorRepo.find({ order: { createdAt: 'DESC' } });
+  async findAll(query: QuerySponsorsDto): Promise<{
+    data: Sponsor[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    const qb = this.sponsorRepo
+      .createQueryBuilder('sponsor')
+      .leftJoinAndSelect('sponsor.child', 'child');
+
+    if (query.search) {
+      qb.andWhere(
+        '(sponsor.name ILIKE :search OR sponsor.email ILIKE :search)',
+        { search: `%${query.search}%` },
+      );
     }
-    return this.sponsorRepo.find({
-      where: [
-        { name: ILike(`%${query.search}%`) },
-        { email: ILike(`%${query.search}%`) },
-      ],
-      order: { name: 'ASC' },
-      take: query.limit,
-    });
+    if (query.active === 'true') {
+      qb.andWhere('sponsor.unsubscribed = false');
+    }
+    if (query.match === 'matched') {
+      qb.andWhere('sponsor.childId IS NOT NULL');
+    } else if (query.match === 'unmatched') {
+      qb.andWhere('sponsor.childId IS NULL');
+    }
+
+    qb.orderBy('sponsor.createdAt', 'DESC')
+      .skip((query.page - 1) * query.limit)
+      .take(query.limit);
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      data,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.ceil(total / query.limit),
+      },
+    };
   }
 
   async findById(id: string): Promise<Sponsor> {
@@ -288,7 +318,29 @@ export class SponsorService {
   ): Promise<Sponsor> {
     const sponsor = await this.findById(sponsorId);
     Object.assign(sponsor, dto);
-    sponsor.preferencesCompletedAt ??= new Date();
+    if (dto.birthday) sponsor.birthdaySkipped = false;
+    if (dto.birthdaySkipped) sponsor.birthday = null;
+
+    if (!sponsor.preferencesCompletedAt) {
+      const requiredChoices = [
+        sponsor.childInterests,
+        sponsor.schoolGoals,
+        sponsor.childGenderPreference,
+        sponsor.communicationPreferences,
+      ];
+      const allChoicesCompleted = requiredChoices.every(
+        (value) => typeof value === 'string' && value.trim().length > 0,
+      );
+      if (
+        !allChoicesCompleted ||
+        (!sponsor.birthday && !sponsor.birthdaySkipped)
+      ) {
+        throw new BadRequestException(
+          'Complete every preference section before submitting',
+        );
+      }
+      sponsor.preferencesCompletedAt = new Date();
+    }
     let saved = await this.sponsorRepo.save(sponsor);
 
     if (!saved.acknowledgmentSentAt) {
@@ -318,5 +370,82 @@ export class SponsorService {
       }),
     ]);
     return { all, matched, unmatched };
+  }
+
+  async statistics(): Promise<{
+    activeSponsors: number;
+    completedProfiles: number;
+    activeMatches: number;
+    unmatchedSponsors: number;
+    unsponsoredBeneficiaries: number;
+    pendingEnquiries: number;
+    sponsorshipStarts: { month: string; starts: number }[];
+  }> {
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, index) => {
+      const offset = index - 5;
+      const start = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1),
+      );
+      const end = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset + 1, 0),
+      );
+      return {
+        start,
+        end,
+        month: start.toLocaleDateString('en-GB', {
+          month: 'short',
+          timeZone: 'UTC',
+        }),
+      };
+    });
+    const [
+      activeSponsors,
+      completedProfiles,
+      activeMatches,
+      unmatchedSponsors,
+      unsponsoredBeneficiaries,
+      pendingEnquiries,
+      ...sponsorshipStartCounts
+    ] = await Promise.all([
+      this.sponsorRepo.count({ where: { unsubscribed: false } }),
+      this.sponsorRepo.count({
+        where: {
+          unsubscribed: false,
+          preferencesCompletedAt: Not(IsNull()),
+        },
+      }),
+      this.sponsorRepo.count({
+        where: { unsubscribed: false, child: Not(IsNull()) },
+      }),
+      this.sponsorRepo.count({
+        where: { unsubscribed: false, child: IsNull() },
+      }),
+      this.childrenService.countUnsponsoredBeneficiaries(),
+      this.sponsorRepo.count({
+        where: { unsubscribed: false, followUpSentAt: IsNull() },
+      }),
+      ...months.map(({ start, end }) =>
+        this.sponsorRepo.count({
+          where: {
+            unsubscribed: false,
+            child: { sponsorshipStartDate: Between(start, end) },
+          },
+        }),
+      ),
+    ]);
+
+    return {
+      activeSponsors,
+      completedProfiles,
+      activeMatches,
+      unmatchedSponsors,
+      unsponsoredBeneficiaries,
+      pendingEnquiries,
+      sponsorshipStarts: months.map(({ month }, index) => ({
+        month,
+        starts: sponsorshipStartCounts[index],
+      })),
+    };
   }
 }

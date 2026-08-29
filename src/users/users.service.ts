@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { User } from './entities/user.entity';
 import { UserRole } from './enums/user-role.enum';
+import { QueryUsersDto } from './dto/query-users.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateSponsorAccountDto } from './dto/create-sponsor-account.dto';
 import { Sponsor } from '../sponsor/entities/sponsor.entity';
@@ -233,9 +234,21 @@ export class UsersService implements OnModuleInit {
     return this.usersRepo.findOne({ where: { id } });
   }
 
-  async findAll(): Promise<SafeUser[]> {
-    const users = await this.usersRepo.find({ order: { createdAt: 'DESC' } });
-    return users.map((u) => this.toSafeUser(u));
+  async findAll(query: QueryUsersDto) {
+    const [users, total] = await this.usersRepo.findAndCount({
+      order: { createdAt: 'DESC' },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    });
+    return {
+      data: users.map((u) => this.toSafeUser(u)),
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.ceil(total / query.limit),
+      },
+    };
   }
 
   private generateTemporaryPassword(): string {

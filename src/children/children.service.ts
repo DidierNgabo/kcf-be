@@ -74,6 +74,20 @@ export class ChildrenService {
     return this.repo.save(child);
   }
 
+  countUnsponsoredBeneficiaries(): Promise<number> {
+    return this.repo
+      .createQueryBuilder('child')
+      .leftJoin(
+        'child.sponsors',
+        'sponsor',
+        'sponsor.unsubscribed = :unsubscribed',
+        { unsubscribed: false },
+      )
+      .where('child.status = :status', { status: ChildStatus.ACTIVE })
+      .andWhere('sponsor.id IS NULL')
+      .getCount();
+  }
+
   async create(dto: CreateChildDto, userId?: string) {
     return this.dataSource.transaction(async (manager) => {
       if (dto.kcfNumber && await manager.exists(Child, { where: { kcfNumber: dto.kcfNumber } })) {
@@ -193,7 +207,7 @@ export class ChildrenService {
       guardianRelationship: child.guardians?.find((item) => item.isPrimary)?.relationship ?? child.guardians?.[0]?.relationship ?? null,
       guardianConsent: latestConsent(ConsentType.GUARDIAN) === ConsentStatus.GRANTED,
       photoConsentStatus: latestConsent(ConsentType.PHOTO) === ConsentStatus.GRANTED,
-      sponsored: Boolean(child.sponsors?.length),
+      sponsored: Boolean(child.sponsors?.some((sponsor) => !sponsor.unsubscribed)),
       sponsorshipStartDate: child.sponsorshipStartDate,
       createdAt: child.createdAt, updatedAt: child.updatedAt,
     };

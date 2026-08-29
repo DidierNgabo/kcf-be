@@ -60,6 +60,9 @@ export class Sponsor {
   @Column({ type: 'date', nullable: true })
   birthday: string | null;
 
+  @Column({ default: false })
+  birthdaySkipped: boolean;
+
   @Column({ type: 'timestamptz', nullable: true })
   preferencesCompletedAt: Date | null;
 

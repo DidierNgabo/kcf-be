@@ -151,7 +151,13 @@ describe('Sponsorship matching and preferences (e2e)', () => {
       const res = await request(app.getHttpServer())
         .patch('/sponsor/me/preferences')
         .set('Authorization', `Bearer ${sponsorToken}`)
-        .send({ childInterests: 'Football and drawing' })
+        .send({
+          childInterests: 'Football and drawing',
+          schoolGoals: 'Primary school',
+          childGenderPreference: 'No preference',
+          communicationPreferences: 'Letters',
+          birthdaySkipped: true,
+        })
         .expect(200);
       const body = res.body as {
         childInterests: string;
@@ -159,6 +165,41 @@ describe('Sponsorship matching and preferences (e2e)', () => {
       };
       expect(body.childInterests).toBe('Football and drawing');
       expect(body.preferencesCompletedAt).not.toBeNull();
+    });
+
+    it('rejects an incomplete first preference submission', async () => {
+      const incompleteEmail = `incomplete-sponsor-${suffix}@kcf.test`;
+      createdSponsorEmails.push(incompleteEmail);
+      createdUserEmails.push(incompleteEmail);
+      const incompleteSponsor = await sponsorsRepo.save(
+        sponsorsRepo.create({
+          name: 'Incomplete Sponsor',
+          email: incompleteEmail,
+        }),
+      );
+      await request(app.getHttpServer())
+        .post('/users/sponsor-accounts')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          sponsorId: incompleteSponsor.id,
+          password: 'password123',
+          skipEmail: true,
+        })
+        .expect(201);
+      await sleepPastSecondBoundary();
+      const login = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: incompleteEmail, password: 'password123' })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .patch('/sponsor/me/preferences')
+        .set(
+          'Authorization',
+          `Bearer ${(login.body as LoginResponseBody).accessToken}`,
+        )
+        .send({ childInterests: 'Sports' })
+        .expect(400);
     });
 
     it('forbids non-sponsor roles', async () => {

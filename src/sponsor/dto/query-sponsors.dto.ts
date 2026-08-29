@@ -1,7 +1,10 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class QuerySponsorsDto {
   @IsString() @IsOptional() search?: string;
-  @Type(() => Number) @IsInt() @Min(1) @Max(50) @IsOptional() limit = 20;
+  @IsIn(['all', 'matched', 'unmatched']) @IsOptional() match = 'all';
+  @IsIn(['true', 'false']) @IsOptional() active?: 'true' | 'false';
+  @Type(() => Number) @IsInt() @Min(1) @IsOptional() page = 1;
+  @Type(() => Number) @IsInt() @Min(1) @Max(100) @IsOptional() limit = 20;
 }
